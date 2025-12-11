@@ -42,5 +42,4 @@ A powerful and developer-friendly **Sports Betting API** that provides real-time
 
 ## contact
 
--Twitter [@defai_maxi](https://x.com/defai_maxi)
--Telegram [@rhettjel](https://t.me/rhettjel)
+-Telegram [@roswellecho](https://t.me/roswellecho)
