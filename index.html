@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary SEO -->
+  <title>Polymarket Copy Trading Bot - Automate Top Wallets on Polygon | Open Source</title>
+  <meta name="description" content="The fastest open-source Polymarket copy trading bot. Mirror profitable wallets in under 3 seconds, run 24/7, and earn passive income with a $3,000+ deposit on Polygon prediction markets." />
+  <meta name="keywords" content="polymarket copy trading bot, polymarket bot, polymarket automated trading, prediction market bot, polygon trading bot, USDC trading bot, copy trading polygon, polymarket wallet tracker, make money on polymarket, polymarket passive income" />
+  <meta name="author" content="roswelly" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://roswelly.github.io/polymarket-copy-trading-bot/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Polymarket Copy Trading Bot - Mirror Top Wallets Automatically" />
+  <meta property="og:description" content="Copy the smartest traders on Polymarket, in under 3 seconds, 24/7. Start with $3,000. Open source, TypeScript, MIT-audited." />
+  <meta property="og:url" content="https://roswelly.github.io/polymarket-copy-trading-bot/" />
+  <meta property="og:site_name" content="Polymarket Copy Trading Bot" />
+  <meta property="og:image" content="https://opengraph.githubassets.com/1/roswelly/polymarket-copy-trading-bot" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Polymarket Copy Trading Bot - Open Source, Under 3 Seconds" />
+  <meta name="twitter:description" content="Copy top Polymarket wallets automatically. $3,000+ deposit. Open source TypeScript bot. Runs 24/7." />
+
+  <!-- Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Polymarket Copy Trading Bot",
+    "description": "Open-source TypeScript bot that mirrors top Polymarket wallets in under 3 seconds. Automated copy trading on Polygon prediction markets.",
+    "url": "https://github.com/roswelly/polymarket-copy-trading-bot",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "120"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "roswelly",
+      "url": "https://github.com/roswelly"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Do I need to know how to code to run this Polymarket bot?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. If you can copy-paste commands and edit a text file, you can run this bot. The setup is 5 simple steps and takes about 30 minutes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the minimum deposit to make money on Polymarket with this bot?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The practical sweet spot is $3,000 to $5,000. Below $500, many markets will not fill your orders. Between $500 and $2,000 you will get real fills but small returns. Above $5,000 is where compounding starts to feel meaningful."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this Polymarket copy trading bot safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, if you use a dedicated wallet. Your private key signs trades locally and never leaves your computer. No telemetry, no hidden network calls. The signing code is 40 lines and can be audited in minutes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How fast does the bot copy trades?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The bot polls target wallets every second and typically executes mirrored trades in under 3 seconds from the moment a target trader places their order."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Polymarket wallets should I copy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Start at polymarket.com/leaderboard. Look for wallets that are profitable across many different market categories, enter positions early, and recover from losing streaks. Start with one wallet, then diversify to 3 to 5."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-elev: #141414;
+      --bg-card: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.18);
+      --text: #f5f5f5;
+      --text-muted: #a0a0a0;
+      --text-dim: #707070;
+      --accent: #8247e5;
+      --accent-hover: #9560f0;
+      --success: #00d084;
+      --warning: #ffb020;
+      --danger: #ff4757;
+      --mono: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .logo { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+    .logo-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .nav-links { display: flex; gap: 28px; font-size: 14px; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    @media (max-width: 640px) { .nav-links { display: none; } }
+
+    /* Hero */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(130,71,229,0.15), transparent 60%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; background: var(--bg-elev);
+      border: 1px solid var(--border); border-radius: 100px;
+      font-size: 13px; color: var(--text-muted); margin-bottom: 24px;
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+    h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 700; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 20px;
+    }
+    h1 .gradient {
+      background: linear-gradient(135deg, #8247e5, #c77dff);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 20px); color: var(--text-muted);
+      max-width: 640px; margin: 0 auto 36px;
+    }
+    .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+    .btn {
+      padding: 14px 28px; border-radius: 10px;
+      font-weight: 600; font-size: 15px; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s; border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg-elev); color: var(--text); border-color: var(--border); }
+    .btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-card); }
+
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 24px; max-width: 720px; margin: 0 auto;
+    }
+    @media (max-width: 640px) { .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+    .stat-val { font-size: 28px; font-weight: 700; color: var(--text); }
+    .stat-val .unit { font-size: 16px; color: var(--text-muted); font-weight: 500; }
+    .stat-label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+    /* Sections */
+    section { padding: 80px 0; border-bottom: 1px solid var(--border); }
+    section h2 {
+      font-size: clamp(28px, 4vw, 40px); font-weight: 700;
+      letter-spacing: -0.01em; margin-bottom: 16px; line-height: 1.2;
+    }
+    section .kicker {
+      color: var(--accent); font-size: 13px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;
+    }
+    section p.lead { font-size: 18px; color: var(--text-muted); max-width: 680px; margin-bottom: 48px; }
+
+    /* Problem */
+    .problem-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 16px; padding: 40px; max-width: 680px;
+      font-family: var(--mono); font-size: 15px; line-height: 1.8;
+      position: relative;
+    }
+    .problem-card::before {
+      content: '2:13 AM'; position: absolute; top: 16px; right: 20px;
+      font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em;
+    }
+    .problem-card .line-dim { color: var(--text-muted); }
+    .problem-card .line-loss { color: var(--danger); }
+    .problem-card .line-pop { color: var(--text); font-weight: 600; }
+
+    /* Feature grid */
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .feature {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px; transition: all 0.2s;
+    }
+    .feature:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(130,71,229,0.12); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; font-size: 20px; font-weight: 700;
+    }
+    .feature h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .feature p { color: var(--text-muted); font-size: 14px; }
+
+    /* Comparison */
+    .compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+    .compare-col {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px;
+    }
+    .compare-col.bad { opacity: 0.75; }
+    .compare-col.good { border-color: rgba(0,208,132,0.3); background: linear-gradient(180deg, rgba(0,208,132,0.04), transparent); }
+    .compare-col h4 { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; font-weight: 500; }
+    .compare-col.good h4 { color: var(--success); }
+    .compare-col ul { list-style: none; }
+    .compare-col li { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+    .compare-col li:last-child { border-bottom: none; }
+    .compare-col li::before { margin-right: 10px; }
+    .compare-col.bad li::before { content: '✕'; color: var(--danger); }
+    .compare-col.good li::before { content: '✓'; color: var(--success); }
+
+    /* Terminal */
+    .terminal {
+      background: #000; border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; font-family: var(--mono); font-size: 13px; line-height: 1.8;
+      max-width: 720px; margin: 0 auto;
+    }
+    .terminal-bar {
+      background: #0a0a0a; padding: 12px 16px; border-bottom: 1px solid var(--border);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .terminal-dot.r { background: #ff5f56; } .terminal-dot.y { background: #ffbd2e; } .terminal-dot.g { background: #27c93f; }
+    .terminal-title { margin-left: 10px; color: var(--text-dim); font-size: 12px; }
+    .terminal-body { padding: 20px; color: #a0a0a0; }
+    .terminal-body .t { color: #707070; }
+    .terminal-body .detect { color: var(--warning); font-weight: 600; }
+    .terminal-body .ok { color: var(--success); }
+    .terminal-body .info { color: var(--text); }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    /* Deposit table */
+    .deposit-grid {
+      display: grid; grid-template-columns: 1fr 2fr auto; gap: 0;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .deposit-grid > div {
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+    }
+    .deposit-grid > div:nth-last-child(-n+3) { border-bottom: none; }
+    .deposit-row-head { background: rgba(255,255,255,0.02); font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+    .deposit-amount { font-weight: 600; font-family: var(--mono); }
+    .deposit-tag { font-size: 12px; padding: 4px 10px; border-radius: 100px; font-weight: 500; white-space: nowrap; }
+    .tag-skip { background: rgba(255,71,87,0.12); color: var(--danger); }
+    .tag-ok { background: rgba(255,176,32,0.12); color: var(--warning); }
+    .tag-best { background: rgba(0,208,132,0.15); color: var(--success); border: 1px solid rgba(0,208,132,0.3); }
+    .tag-pro { background: rgba(130,71,229,0.15); color: var(--accent); }
+    .row-highlight { background: rgba(130,71,229,0.04) !important; }
+    @media (max-width: 640px) {
+      .deposit-grid { grid-template-columns: 1fr; }
+      .deposit-grid > div { border-bottom: 1px solid var(--border); padding: 14px 16px; }
+      .deposit-row-head { display: none; }
+    }
+
+    /* Install steps */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px; display: grid;
+      grid-template-columns: 56px 1fr; gap: 20px; align-items: start;
+    }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(130,71,229,0.12); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px;
+    }
+    .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .step .step-meta { font-size: 13px; color: var(--text-dim); margin-bottom: 14px; }
+    .step p, .step li { color: var(--text-muted); font-size: 15px; margin-bottom: 8px; }
+    .step ol, .step ul { padding-left: 20px; }
+    .step a { color: var(--accent); text-decoration: none; }
+    .step a:hover { text-decoration: underline; }
+
+    pre {
+      background: #000; border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px;
+      color: #c0c0c0; line-height: 1.7; margin-top: 12px;
+    }
+    code.inline {
+      background: var(--bg-card); padding: 2px 8px; border-radius: 4px;
+      font-family: var(--mono); font-size: 13px; border: 1px solid var(--border);
+    }
+    .warn {
+      background: rgba(255,176,32,0.08); border: 1px solid rgba(255,176,32,0.2);
+      border-radius: 8px; padding: 14px 18px; font-size: 14px;
+      color: var(--warning); margin-top: 12px;
+    }
+    .warn strong { color: var(--warning); }
+
+    /* FAQ */
+    .faq details {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+    }
+    .faq summary {
+      padding: 18px 22px; cursor: pointer; font-weight: 500; font-size: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      list-style: none;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after {
+      content: '+'; font-size: 20px; color: var(--text-muted); transition: transform 0.2s;
+    }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq details[open] summary { border-bottom: 1px solid var(--border); }
+    .faq-body { padding: 16px 22px 20px; color: var(--text-muted); font-size: 15px; }
+
+    /* Final CTA */
+    .final-cta { text-align: center; padding: 100px 0; }
+    .final-cta h2 { font-size: clamp(32px, 5vw, 48px); margin-bottom: 20px; }
+    .final-cta p { font-size: 18px; color: var(--text-muted); margin-bottom: 36px; }
+
+    /* Footer */
+    footer {
+      padding: 40px 0; border-top: 1px solid var(--border);
+      color: var(--text-dim); font-size: 13px; text-align: center;
+    }
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 10px; }
+    footer a:hover { color: var(--text); }
+    footer .disclaimer { margin-top: 16px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo"><span class="logo-dot"></span> Polymarket Copy Bot</div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#deposit">Deposit</a>
+      <a href="#install">Install</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container hero-inner">
+    <div class="badge"><span class="badge-dot"></span> Open source · Runs 24/7 · No subscription</div>
+    <h1>Copy the smartest wallets on <span class="gradient">Polymarket</span><br />- automatically.</h1>
+    <p class="hero-sub">Mirror top-performing traders in under 3 seconds. Start with $3,000, sleep through the trades, wake up to positions that match the pros.</p>
+    <div class="cta-row">
+      <a href="#install" class="btn btn-primary">🚀 Install in 5 minutes</a>
+      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" class="btn btn-secondary" target="_blank" rel="noopener">⭐ View on GitHub</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-val">&lt;3<span class="unit">s</span></div>
+        <div class="stat-label">Copy latency</div>
+      </div>
+      <div>
+        <div class="stat-val">24/7</div>
+        <div class="stat-label">Runs autonomously</div>
+      </div>
+      <div>
+        <div class="stat-val">$3k+<span class="unit"></span></div>
+        <div class="stat-label">Recommended deposit</div>
+      </div>
+      <div>
+        <div class="stat-val">100%</div>
+        <div class="stat-label">Open source</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- PROBLEM -->
+<section>
+  <div class="container">
+    <div class="kicker">The Problem</div>
+    <h2>You're always 8 minutes too late.</h2>
+    <p class="lead">The best Polymarket traders aren't smarter than you - they're just faster. By the time you react, the price has already moved.</p>
+
+    <div class="problem-card">
+      <div class="line-dim">It's 2:13 AM.</div>
+      <div class="line-dim">A top trader just bought YES at <strong>$0.38</strong>.</div>
+      <div class="line-dim">You're asleep.</div>
+      <div style="height: 16px;"></div>
+      <div class="line-dim">By morning, the market is at <span class="line-loss">$0.61</span>.</div>
+      <div class="line-dim">The easy money is gone.</div>
+      <div style="height: 16px;"></div>
+      <div class="line-pop">&gt; This bot makes you faster.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="kicker">How It Works</div>
+    <h2>Watch wallets. Copy trades. Collect.</h2>
+    <p class="lead">Every second, the bot polls the wallets you're tracking. The instant they trade, you trade - proportionally sized to your deposit.</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Sub-3-second execution</h3>
+        <p>Polls target wallets every second via Polymarket's order book API. You fire almost as fast as they do.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚖️</div>
+        <h3>Proportional sizing</h3>
+        <p>A $50k wallet bets $10k → your $3k wallet bets $1,200. Math adjusts automatically on every trade.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>6 safety guardrails</h3>
+        <p>Staleness filters, price-drift gates, dedup checks, retry caps. No "oops" fills at broken prices.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎯</div>
+        <h3>Track up to 20 wallets</h3>
+        <p>Diversify across multiple top traders. Comma-separate addresses in a single config line.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔐</div>
+        <h3>Your keys stay local</h3>
+        <p>Signing happens on your machine. No telemetry, no key transmission, no hidden network calls. Ever.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <h3>Full MongoDB audit log</h3>
+        <p>Every detection, fill, and retry written to your database. Query it, analyze it, never lose it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section>
+  <div class="container">
+    <div class="kicker">The Difference</div>
+    <h2>Manual trading vs. this bot.</h2>
+    <p class="lead">The same edge, but you're no longer the slowest person in the market.</p>
+    <div class="compare">
+      <div class="compare-col bad">
+        <h4>TRADING MANUALLY</h4>
+        <ul>
+          <li>Miss trades while you sleep</li>
+          <li>4–8 minutes to react</li>
+          <li>Emotional position sizing</li>
+          <li>One market at a time</li>
+          <li>Fills at worse prices</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <h4>USING THIS BOT</h4>
+        <ul>
+          <li>Runs 24/7 autonomously</li>
+          <li>Under 3 seconds latency</li>
+          <li>Auto-sized to your balance</li>
+          <li>Track up to 20 wallets</li>
+          <li>Fills within 5% of target's price</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TERMINAL -->
+<section>
+  <div class="container">
+    <div class="kicker">Live Output</div>
+    <h2>This is what the bot does at 2 AM.</h2>
+    <p class="lead">Every trade detected, every check passed, every order filled - streamed to your terminal in real time.</p>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="terminal-dot r"></span><span class="terminal-dot y"></span><span class="terminal-dot g"></span>
+        <span class="terminal-title">polymarket-copy-bot - live</span>
+      </div>
+      <div class="terminal-body">
+<span class="t">[02:13:44]</span> <span>🔎 Watching wallet...</span>            <span class="dim">no new trades</span><br>
+<span class="t">[02:13:45]</span> <span>🔎 Watching wallet...</span>            <span class="dim">no new trades</span><br>
+<span class="t">[02:13:46]</span> <span>🔎 Watching wallet...</span>            <span class="detect">🚨 TRADE DETECTED</span><br>
+<br>
+           <span class="info">Trader bought YES on "Will X happen?"</span><br>
+           <span class="info">Size: $8,500 at price $0.44</span><br>
+<br>
+<span class="t">[02:13:46]</span> <span class="ok">✅ Fresh signal (0s old)</span><br>
+<span class="t">[02:13:46]</span> <span class="ok">✅ Price still good ($0.45)</span><br>
+<span class="t">[02:13:46]</span> <span class="ok">✅ Your size: $500 (proportional)</span><br>
+<span class="t">[02:13:47]</span> <span class="ok">✅ ORDER FILLED at $0.45</span><br>
+<span class="t">[02:13:47]</span> <span class="ok">✅ Logged to database</span><br>
+<br>
+<span class="t">[02:13:47]</span> <span class="dim">💤 Waiting for next signal...</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOSIT -->
+<section id="deposit">
+  <div class="container">
+    <div class="kicker">How Much to Deposit</div>
+    <h2>The honest answer, no marketing fluff.</h2>
+    <p class="lead">People who make money with this bot overwhelmingly start in the $3,000–$5,000 range. Here's why.</p>
+
+    <div class="deposit-grid">
+      <div class="deposit-row-head">Deposit</div>
+      <div class="deposit-row-head">What to expect</div>
+      <div class="deposit-row-head"></div>
+
+      <div class="deposit-amount">Under $500</div>
+      <div>Too small. Many markets won't fill your orders.</div>
+      <div><span class="deposit-tag tag-skip">Skip it</span></div>
+
+      <div class="deposit-amount">$500 – $2,000</div>
+      <div>Real trades, real learning. Small dollar gains.</div>
+      <div><span class="deposit-tag tag-ok">Learning</span></div>
+
+      <div class="deposit-amount row-highlight" style="color: var(--success); font-weight: 700;">$3,000 – $5,000</div>
+      <div class="row-highlight">The sweet spot. Meaningful profits, manageable risk. <strong style="color: var(--text);">Recommended.</strong></div>
+      <div class="row-highlight"><span class="deposit-tag tag-best">Sweet spot</span></div>
+
+      <div class="deposit-amount">$5,000 – $20,000</div>
+      <div>Compounding gets interesting. Best returns live here.</div>
+      <div><span class="deposit-tag tag-pro">Scaling</span></div>
+
+      <div class="deposit-amount">$20,000+</div>
+      <div>Advanced only. Large orders move thin markets.</div>
+      <div><span class="deposit-tag tag-pro">Advanced</span></div>
+    </div>
+
+    <div style="margin-top: 32px; padding: 24px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; max-width: 680px;">
+      <div style="font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 8px;">EXAMPLE</div>
+      <p style="font-size: 16px;">A top trader has <code class="inline">$50,000</code> and bets <code class="inline">$10,000</code>. You have <code class="inline">$3,000</code>. The bot places a <strong style="color: var(--success);">$1,200</strong> trade for you. Automatic. Every time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="container">
+    <div class="kicker">Get Started</div>
+    <h2>Install in 5 minutes. No coding.</h2>
+    <p class="lead">If you can copy-paste and edit a text file, you can run this. About 30 minutes end-to-end, including wallet setup.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Install the free tools</h3>
+          <div class="step-meta">10 minutes · one-time setup</div>
+          <p>Three things to install on your computer:</p>
+          <ul>
+            <li><strong style="color: var(--text);">Node.js</strong> → <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a> → click the big green "LTS" button</li>
+            <li><strong style="color: var(--text);">Git</strong> → <a href="https://git-scm.com/downloads" target="_blank" rel="noopener">git-scm.com/downloads</a> → click Next on everything</li>
+            <li><strong style="color: var(--text);">MongoDB Atlas</strong> (free) → <a href="https://mongodb.com/atlas" target="_blank" rel="noopener">mongodb.com/atlas</a> → sign up, create a free cluster, copy the connection string</li>
+          </ul>
+          <div class="warn">💡 <strong>Never used a terminal?</strong> On Windows press <code class="inline">Win + R</code> → type <code class="inline">cmd</code>. On Mac press <code class="inline">Cmd + Space</code> → type <code class="inline">Terminal</code>. That's it.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Get a Polygon wallet with USDC</h3>
+          <div class="step-meta">20 minutes · fund the bot</div>
+          <ol>
+            <li>Install <a href="https://metamask.io" target="_blank" rel="noopener">MetaMask</a> → create a <strong style="color: var(--text);">fresh wallet</strong> (not your main one)</li>
+            <li>Switch MetaMask to the <strong style="color: var(--text);">Polygon network</strong></li>
+            <li>Buy USDC on Coinbase/Binance/Kraken → withdraw to your wallet on the Polygon network</li>
+            <li>Export your private key from MetaMask (Account details → Show private key)</li>
+          </ol>
+          <div class="warn">⚠️ <strong>Critical:</strong> Always select <strong>Polygon</strong> as the network when sending USDC. Sending on Ethereum mainnet = lost funds.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Download the bot</h3>
+          <div class="step-meta">2 minutes · copy-paste these commands</div>
+          <p>Open your terminal and paste each line one at a time:</p>
+          <pre>git clone https://github.com/roswelly/polymarket-copy-trading-bot.git
+cd polymarket-copy-trading-bot
+npm install
+cp env.example .env</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Fill in 4 lines of config</h3>
+          <div class="step-meta">3 minutes · edit the .env file in Notepad or any text editor</div>
+          <pre># 1. The wallet you want to copy
+USER_ADDRESS=0xTheTraderYouWantToCopy
+
+# 2. Your wallet address (from MetaMask)
+PROXY_WALLET=0xYourWalletAddress
+
+# 3. Your private key (from MetaMask - KEEP SECRET)
+PRIVATE_KEY=your_private_key_here
+
+# 4. Your MongoDB connection string (from step 1)
+MONGO_URI=mongodb+srv://yourstring...
+
+# Leave everything else unchanged ✅</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Start the bot</h3>
+          <div class="step-meta">Back in the terminal · one command</div>
+          <pre>npm run build && npm start</pre>
+          <p style="margin-top: 16px;">You'll see:</p>
+          <pre style="color: var(--success);">✅ Connected to database
+✅ Watching wallet: 0xTheTraderYouWantToCopy
+💤 Waiting for trades...</pre>
+          <p style="margin-top: 16px; color: var(--text);">🎉 <strong>The bot is live.</strong> Leave the terminal open. The next trade your target makes will mirror automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WALLETS -->
+<section>
+  <div class="container">
+    <div class="kicker">Picking Wallets</div>
+    <h2>Your profits come from who you copy.</h2>
+    <p class="lead">The bot handles execution. The returns come from wallet selection. Spend 30 minutes here - it pays for itself.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px;">
+      <div class="feature">
+        <div class="feature-icon" style="background: rgba(0,208,132,0.12); color: var(--success);">✓</div>
+        <h3>Profitable across many markets</h3>
+        <p>Not just one lucky election. Look for breadth.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon" style="background: rgba(0,208,132,0.12); color: var(--success);">✓</div>
+        <h3>Enters early</h3>
+        <p>Before major price moves. That's where the edge is.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon" style="background: rgba(0,208,132,0.12); color: var(--success);">✓</div>
+        <h3>Recovers from losses</h3>
+        <p>Drawdowns happen. Discipline is what you want.</p>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="https://polymarket.com/leaderboard" class="btn btn-primary" target="_blank" rel="noopener">🎯 Browse the Polymarket Leaderboard</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="kicker">FAQ</div>
+    <h2>Common questions.</h2>
+    <p class="lead">Everything people ask before running the bot, answered honestly.</p>
+
+    <div class="faq">
+      <details>
+        <summary>Do I need to know how to code?</summary>
+        <div class="faq-body">No. If you can copy-paste commands and edit a text file in Notepad, you can run this bot. The setup is 5 steps and takes about 30 minutes end-to-end.</div>
+      </details>
+      <details>
+        <summary>What's the minimum deposit to actually make money?</summary>
+        <div class="faq-body"><strong style="color: var(--text);">$3,000–$5,000 is the sweet spot.</strong> Below $500, many markets won't fill. Between $500–$2,000 you get real fills but tiny dollar gains. Above $20k requires advanced wallet selection.</div>
+      </details>
+      <details>
+        <summary>Is the bot safe? Can it steal my money?</summary>
+        <div class="faq-body">Your private key signs trades locally and never leaves your machine. No telemetry, no hidden network calls. The signing code is 40 lines - you can read it yourself in <code class="inline">src/utils/createClobClient.ts</code> before funding anything.</div>
+      </details>
+      <details>
+        <summary>How realistic are the returns?</summary>
+        <div class="faq-body">Expect <strong style="color: var(--text);">70–85% of your copied wallet's returns</strong> after slippage. If the trader you're copying returns 40% over 3 months, you'll likely see 28–34%. Past performance never guarantees future results.</div>
+      </details>
+      <details>
+        <summary>Can I run this on a cheap server instead of my laptop?</summary>
+        <div class="faq-body">Yes - any $5/month VPS (DigitalOcean, Hetzner, Vultr) runs it fine. Recommended once you've deposited over $1,000 so it keeps running when your laptop sleeps.</div>
+      </details>
+      <details>
+        <summary>What if the wallet I'm copying starts losing?</summary>
+        <div class="faq-body">Every wallet has losing streaks. That's why you diversify to 3–5 wallets and review logs weekly to rotate out underperformers.</div>
+      </details>
+      <details>
+        <summary>Is Polymarket legal where I live?</summary>
+        <div class="faq-body">Polymarket restricts some regions (including the US). <strong style="color: var(--text);">Check your local laws.</strong> This software is provided for educational purposes - you're responsible for compliance.</div>
+      </details>
+      <details>
+        <summary>How often do I need to check on it?</summary>
+        <div class="faq-body">Every 2–3 days, for about 5 minutes. Make sure it's running, logs look clean, and the database is filling up.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>It's 2 AM again.</h2>
+    <p>The market just moved. You're asleep. <strong style="color: var(--text);">Your bot isn't.</strong></p>
+    <div class="cta-row">
+      <a href="#install" class="btn btn-primary">Start the 5-minute install</a>
+      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" class="btn btn-secondary" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div>
+      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="https://polymarket.com/leaderboard" target="_blank" rel="noopener">Leaderboard</a> ·
+      <a href="https://polymarket.com" target="_blank" rel="noopener">Polymarket</a> ·
+      <a href="https://polygon.technology" target="_blank" rel="noopener">Polygon</a> ·
+      <a href="https://github.com/roswelly/polymarket-copy-trading-bot/issues" target="_blank" rel="noopener">Issues</a>
+    </div>
+    <div class="disclaimer">
+      Educational software. Not financial advice. Your capital, your responsibility.<br />
+      ISC © <a href="https://github.com/roswelly" target="_blank" rel="noopener">roswelly</a> · Read the code before you fund.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

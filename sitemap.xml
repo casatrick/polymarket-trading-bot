@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Main repository landing page -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- README / project documentation -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/README.md</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Releases page -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/releases</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Issues / support -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/issues</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Pull requests -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/pulls</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Wiki (if enabled) -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/wiki</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Source code root -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/tree/main/src</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Key source files (discoverable via GitHub code search) -->
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/src/index.ts</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/src/services/tradeMonitor.ts</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/src/services/tradeExecutor.ts</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/src/utils/postOrder.ts</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/src/utils/createClobClient.ts</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/package.json</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/env.example</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

