@@ -11,7 +11,7 @@
         "format": "prettier --write .",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "keywords": [],
+    "keywords": ["polymarket", "copy trading", "bot"],
     "author": "roswell",
     "license": "ISC",
     "type": "commonjs",

@@ -1,128 +1,107 @@
-<div align="center">
-
 # Polymarket Copy Trading Bot
 
-### Copy the smartest traders on Polymarket - automatically, 24/7, in under 3 seconds.
+A TypeScript service that mirrors trades from selected Polymarket wallets into your own wallet, in near real time, with configurable position sizing and safety filters.
 
-**Turn sharp wallets into your strategy. Start with $3,000. Sleep through the trades.**
-
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Polygon](https://img.shields.io/badge/Polygon-USDC-8247E5?style=flat-square&logo=polygon&logoColor=white)](https://polygon.technology)
-[![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)](https://opensource.org/licenses/ISC)
-
-**[⭐ Star this repo](https://github.com/roswelly/polymarket-copy-trading-bot/)** · **[Quick Install](#-install-in-5-minutes-no-coding-needed)** · **[How Much to Deposit](#-how-much-should-you-deposit)**
-
-</div>
+Built on `@polymarket/clob-client`, `ethers.js`, and MongoDB. Runs on Polygon with USDC.
 
 ---
 
-## The Problem
+## What it does
 
-**It's 2:10 AM.** A top Polymarket trader just bought into a market at $0.38. By the time you wake up, it's at $0.61.
+The bot watches one or more Polymarket trader wallets via the Data API, detects new fills, and places proportionally-sized orders from your wallet through the CLOB. Every observed trade and every action taken is logged to MongoDB so you can audit behavior and measure performance against the source wallet.
 
-You missed it. Again.
-
-The best traders on Polymarket aren't smarter than you. **They're just faster.** This bot makes you faster.
+**Typical end-to-end latency from source fill to your order submission is 2–4 seconds**, depending on RPC and network conditions. This is not a latency-critical system — Polymarket markets move on the scale of minutes to hours, not milliseconds.
 
 ---
 
-##  What This Bot Does
+## How it works
 
-Watches the wallets of top Polymarket traders → copies their trades into your wallet → **in under 3 seconds**.
+```
+Source wallet fills a trade on Polymarket
+        │
+        ▼
+Polling loop detects the new fill via Data API
+        │
+        ▼
+Safety filters evaluate the trade (age, slippage, size, duplicates)
+        │
+        ▼
+Position sizing: your order is scaled to (your_balance / source_balance)
+        │
+        ▼
+CLOB client signs and submits the order from your wallet
+        │
+        ▼
+Result logged to MongoDB (success, failure, or skip with reason)
+```
 
-You sleep. The bot trades. You wake up to positions that mirror the pros.
-
-| ❌ Trading manually | ✅ Using this bot |
-|---|---|
-| Miss trades overnight | Runs 24/7 automatically |
-| 4–8 minutes to react | **Under 3 seconds** |
-| Emotional decisions | 6 built-in safety checks |
-| One market at a time | Track 20 wallets at once |
-
----
-
-## Who This Is For
-
-- You want **passive income from Polymarket** without doing research yourself
-- You have **$3,000–$10,000** sitting idle you'd like to put to work
-- You can follow **simple copy-paste instructions** (no coding required)
-- You have **one hour** to get this running
-
-❌ Skip this if: you want instant riches, you can't afford to lose your deposit, or you won't read the setup guide.
-
----
-
-## How Much Should You Deposit?
-
-**The honest answer, no marketing fluff:**
-
-| Your Deposit | What You Should Expect |
-|---|---|
-| Under $500 | Too small. Many markets won't fill. **Skip it.** |
-| $500 - $2,000 | Real trades, real learning. Small dollar gains. |
-| **$3,000 - $5,000** | **The sweet spot.** Meaningful profits, manageable risk. |
-| $5,000 - $20,000 | Compounding gets interesting. Best returns live here. |
-| $20,000+ | Advanced only. Requires careful wallet selection. |
-
-👉 **Most people who make money start at $3,000–$5,000.** That's the recommendation.
-
-**Why $3,000 works:** when the wallet you copy makes a $10,000 trade, your bot automatically sizes your trade proportionally - you don't need whale money to ride with whales.
+The copy scale is proportional to balances. If the source wallet holds $50,000 and places a $10,000 position (20% of their capital), and your wallet holds $3,000, the bot submits a $600 position (20% of your capital). You can override the scale in the config.
 
 ---
 
-## The Magic: Proportional Sizing
+## Who should use this
 
-You don't need $50,000 to copy a $50,000 trader. The bot does the math automatically.
+This project is useful if you:
 
-> Example: A top trader has **$50,000** and bets **$10,000** on a market.
->
-> You have **$3,000**. The bot places a **$1,200** trade for you.
+- Already understand Polymarket and prediction-market mechanics
+- Want to automate mirroring of wallets you've personally vetted
+- Are comfortable running a Node.js service, editing config files, and reading logs
+- Can tolerate losses — copy trading inherits the source wallet's risk, including its losses
 
-Every trade. Automatic. No calculator needed.
+This project is **not** appropriate if you:
 
----
-
-## Built-In Safety (No "Oops" Moments)
-
-Six automatic checks run before any trade hits your wallet:
-
-- **Too old?** Skips trades older than 24 hours
-- **Market moved too much?** Skips if price drifted more than 5%
-- **Too big?** Auto-sizes to match your balance
-- **Duplicate?** Won't place the same trade twice
-- **Failed?** Retries max 3 times, then stops
-- **Invisible?** Every action logged to database - nothing hidden
+- Expect guaranteed returns (there are none, and anyone promising them is lying)
+- Can't afford to lose the capital you deposit
+- Aren't willing to read the signing code before funding the wallet
+- Live in a jurisdiction where Polymarket is restricted (the US among others — check your local law)
 
 ---
 
-## Install in 5 Minutes (No Coding Needed)
+## Safety filters
 
-Follow these steps exactly. If you can copy-paste, you can do this.
+Six filters run before any order is submitted. All are configurable in `.env`:
 
-### Step 1 - Get the tools (10 min, one-time)
+| Filter | Purpose | Default |
+|---|---|---|
+| Trade age | Skip trades older than N seconds when detected | 24 hours |
+| Price drift | Skip if market price has moved more than X% from the source's fill price | 5% |
+| Balance cap | Cap order size at a fraction of your wallet balance | configurable |
+| Duplicate detection | Compare against recent order history in MongoDB to prevent replays | enabled |
+| Retry limit | Retry a failed submission up to N times, then stop and log | 3 |
+| Full audit trail | Every evaluation, skip, and submission written to MongoDB | always on |
 
-You need 3 free things installed on your computer:
+These filters do not guarantee profitability. They reduce operator-error failure modes (stale fills, price gapping, accidental double-submission). The strategy risk — the risk that the wallet you're copying makes bad trades — is not hedged by any of this.
 
-1. **Node.js** → [nodejs.org](https://nodejs.org) → download the big green "LTS" button → install
-2. **Git** → [git-scm.com/downloads](https://git-scm.com/downloads) → download → install (click "Next" on everything)
-3. **MongoDB Atlas** (free cloud database) → [mongodb.com/atlas](https://mongodb.com/atlas) → sign up → create a free cluster → copy the connection string (looks like `mongodb+srv://...`)
+---
 
-> **Never used a terminal?** On Windows press `Win + R`, type `cmd`, hit enter. On Mac press `Cmd + Space`, type `Terminal`, hit enter. That's your terminal.
+## Position sizing, honestly
 
-### Step 2 - Get a Polygon wallet with USDC (20 min)
+Proportional sizing solves one problem: you can follow a large trader without having their capital. It does not solve the harder problems:
 
-1. Install **MetaMask** → [metamask.io](https://metamask.io) → create a new wallet (**use a fresh one, not your main wallet**)
-2. Switch MetaMask to the **Polygon network** (click the network dropdown at the top)
-3. Buy USDC and send it to your new wallet **on the Polygon network** (Coinbase, Binance, Kraken all work)
+- **Slippage is worse at your scale than theirs on thin markets.** A $600 order in a $5,000-liquidity market eats a larger share of the book than the source's $10,000 order did in a $100,000 market they were trading. Your fill price will usually be worse.
+- **Entry timing matters.** You're always arriving 2–4 seconds after the source. For markets that move fast on news, that gap costs you price.
+- **You can't copy exits perfectly.** If the source wallet exits during downtime, your position is still open. Run the bot on a reliable host if you scale up capital.
 
-> **Critical:** Always select **Polygon** as the network when sending USDC. Sending on Ethereum mainnet = lost funds.
+Expect your realized return to be **lower than the source wallet's return**, not equal to it. A reasonable working assumption is 70–85% of the source's return on comparable time horizons, with higher variance on small positions.
 
-4. Export your **private key** from MetaMask (Account menu → Account details → Show private key). Write it down. Don't share it. Ever.
+---
 
-### Step 3 - Download and configure the bot (5 min)
+## Deposit sizing guidance
 
-Open your terminal and paste these commands one at a time:
+There is no "right" amount. This is a rough framing of what the tradeoffs look like:
+
+- **Under $500.** Many orders won't fill because your proportional size is below the market's minimum tick × liquidity threshold. Not recommended unless you're testing.
+- **$500 – $2,000.** Usable for testing the full pipeline against real execution. Dollar gains and losses will be small. Good for calibrating before scaling.
+- **$3,000 – $10,000.** Enough capital for orders to fill reliably on most active markets. Still small enough that a single bad wallet choice won't ruin you.
+- **$10,000+.** Requires more attention to wallet selection, slippage monitoring, and infrastructure (paid RPC, VPS, monitoring). Not a set-and-forget range.
+
+None of these are recommendations. They're observations about how market minimums and fill probability scale with position size. Start smaller than you think you should.
+
+---
+
+## Installation
+
+Prerequisites: Node.js 18+, Git, MongoDB (Atlas free tier works), a Polygon wallet with USDC.
 
 ```bash
 git clone https://github.com/roswelly/polymarket-copy-trading-bot.git
@@ -131,187 +110,142 @@ npm install
 cp env.example .env
 ```
 
-### Step 4 - Fill in the config (5 min)
-
-Open the `.env` file in any text editor (Notepad works fine). Fill in just **4 lines**:
+Fill in `.env`:
 
 ```env
-# 1. The wallet you want to copy (find one at polymarket.com/leaderboard)
-USER_ADDRESS=0xTheTraderYouWantToCopy
-
-# 2. Your wallet address (from MetaMask)
-PROXY_WALLET=0xYourWalletAddress
-
-# 3. Your private key (from MetaMask - KEEP THIS SECRET)
-PRIVATE_KEY=your_private_key_here
-
-# 4. Your MongoDB connection string (from Step 1)
-MONGO_URI=mongodb+srv://yourstring...
-
-# Leave everything else unchanged 
+USER_ADDRESS=0x...          # wallet to copy (from polymarket.com/leaderboard)
+PROXY_WALLET=0x...          # your Polygon wallet address
+PRIVATE_KEY=...             # your wallet's private key — do not share, do not commit
+MONGO_URI=mongodb+srv://... # your MongoDB connection string
 ```
 
-### Step 5 - Start the bot
+Other variables in `env.example` control the filter thresholds and polling interval — defaults are reasonable for initial testing.
 
-Back in the terminal:
+Run:
 
 ```bash
 npm run build && npm start
 ```
 
-**That's it.** You'll see this:
+You should see:
 
 ```
-✅ Connected to database
-✅ Watching wallet: 0xTheTraderYouWantToCopy
-💤 Waiting for trades...
+Connected to MongoDB
+Watching wallet: 0x...
+Polling for new fills...
 ```
 
-**The bot is live.** Leave the terminal open. Next time your target trader makes a move, you'll mirror it automatically.
+Leave the process running. For anything beyond initial testing, run it on a VPS or persistent host — closing your laptop stops the bot.
 
 ---
 
-## Which Wallets Should You Copy?
+## Wallet selection
 
-**This is where your profits come from.** Don't skip this step.
+This is the variable that determines outcomes, not the bot itself. The bot is a transport mechanism; the wallet you copy is the strategy.
 
-👉 Go to **[polymarket.com/leaderboard](https://polymarket.com/leaderboard)**
+Use [polymarket.com/leaderboard](https://polymarket.com/leaderboard) and filter for wallets that show:
 
-Look for wallets that:
+- Consistent profit across many uncorrelated markets, not one windfall
+- A track record spanning at least several months
+- Reasonable position sizing relative to their bankroll (not 80% on single bets)
+- Recovery from drawdowns without blowing up
 
-- Are profitable across **many different markets** (not just one lucky election)
-- Enter positions **early**, before big price moves
-- Have losing streaks but **recover** (that's discipline)
+A wallet that went +$200k on one election is not necessarily skilled. A wallet that is +30% over 200 trades across different categories probably is.
 
-**Popular wallets the community watches:**
-
-| Trader | Link | Why People Copy |
-|---|---|---|
-| **Car** | [polymarket.com/@Car](https://polymarket.com/@Car?tab=activity) | Consistent leaderboard, smart political plays |
-| **Sonix** | [polymarket.com/@Sonix](https://polymarket.com/@Sonix?tab=activity) | Very active, lots of signal density |
-
-> **Pro tip:** Start by copying just **1 wallet**. Once you're comfortable, diversify to 3–5. Skip wallets with only one big win - those are lucky, not skilled.
+Common starting point: copy one wallet for the first few weeks, watch the logs, verify that fills look sane, then diversify to 3–5 wallets to reduce single-wallet risk. Copying 10+ wallets simultaneously produces more noise than signal at small deposit sizes.
 
 ---
 
-## What to Realistically Expect
+## Operational guidance
 
-| What beginners assume | What actually happens |
-|---|---|
-| "I'll 10x in a month" | Realistic: **70–85% of your copied wallet's returns** |
-| "Set it and forget it forever" | Check in every few days. Not hard, not zero either. |
-| "Good traders stay good forever" | Everyone loses sometimes. **Diversify to 3-5 wallets.** |
-| "I can copy 20 wallets at once" | You can - but start with **2-3** or you'll drown in logs. |
+A few things that matter once the bot is live:
 
----
+**Use a paid RPC.** Free public Polygon RPCs rate-limit and drop requests under load. Alchemy, QuickNode, and Infura paid tiers are all fine. A dropped poll means a missed trade.
 
-## Your First 90 Days
+**Monitor the logs, at least weekly.** You want to see fill rate (what percentage of detected source trades resulted in a successful mirror), average slippage versus the source's fill price, and the skip breakdown by filter. MongoDB aggregation queries against the logs collection will give you this.
 
-| Month | What Happens |
-|---|---|
-| **Month 1** - Calibration | Learn the system, tune settings, pick your best wallets |
-| **Month 2** - Consistency | The edge shows up in your P&L. Still feels a bit bumpy. |
-| **Month 3** - Compounding | Real data. Real decisions. Scale up with confidence. |
+**Set a drawdown stop.** Decide before you deposit how much loss would cause you to turn the bot off. Without that, you'll rationalize through a losing month.
 
-**This is not a 1-week experiment. It's permanent passive-income infrastructure.**
+**Rotate wallets.** Good traders go cold. Review your copied wallets monthly against their recent performance on the Polymarket leaderboard and drop ones that have underperformed for two-plus months.
+
+**Use a dedicated wallet.** Never point the bot at a wallet holding funds you can't afford to put at risk. The private key sits in `.env` on whatever machine you're running on.
 
 ---
 
-## Is It Safe?
+## Security notes
 
-**Yes, if you follow the rules:**
+The bot signs transactions locally. Your private key stays in `.env` and is loaded into the signing client via `ethers.js`. Review `src/utils/createClobClient.ts` — the signing path is short and self-contained.
 
-- Use a **dedicated wallet** - never your main holdings
-- Your private key **never leaves your computer** - the bot signs locally
-- **Nothing** is sent anywhere - no telemetry, no tracking, no hidden calls
-- The signing code is **40 lines** - anyone can read it in 5 minutes
+That said:
 
-**Don't trust this README. Look at the code yourself** (`src/utils/createClobClient.ts`).
+- `.env` is a plaintext file on your host. If your machine is compromised, so is the key. Consider disk encryption and standard host hardening if you're running meaningful capital.
+- There is no built-in spend cap at the signing layer. If the trade-execution code has a bug that sizes an order incorrectly, the signer will sign it. Keep deposits proportional to your trust in the code you've reviewed.
+- Exported MongoDB logs contain your wallet address and trading history. Treat them as sensitive.
 
----
-
-## Before You Deposit More Than $3,300
-
-Do these 6 things first. The people who skipped them regret it.
-
-- [ ] Watch the first 10–20 trades actually execute
-- [ ] Check your database - are all trades logging?
-- [ ] Compare your fill prices vs. the trader's - what's your real slippage?
-- [ ] Set a monthly loss limit **before** emotions are involved
-- [ ] Only use a **dedicated wallet** (not your life savings)
-- [ ] Switch to a paid RPC before scaling (free ones crash at bad times)
+This project has not been audited. Read the code before funding.
 
 ---
 
-## Frequently Asked Questions
+## What to expect in the first few months
+
+**First few weeks.** Tuning phase. You're verifying that detections fire, orders submit, fills land at acceptable slippage, and the filter thresholds make sense for the wallets you're copying. Expect to adjust `.env` values a few times.
+
+**One to three months.** The noise-to-signal ratio on returns is high in this range. Don't draw conclusions from a two-week window — prediction markets resolve on their own timeline, and unresolved positions look like losses in your logs until they settle.
+
+**Three months and beyond.** Enough realized P&L to evaluate whether your wallet selection is working. This is the point to decide whether to scale capital up, change your copied wallets, or stop.
+
+If the realized returns after three months of reasonable operation are materially negative versus the source wallets, the issue is usually one of: RPC reliability (missed trades), slippage (thin markets at your size), or wallet selection (the source wasn't as good as the leaderboard suggested). The bot itself is rarely the limiting factor.
+
+---
+
+## FAQ
 
 **Do I need to know how to code?**
-No. If you can copy-paste commands and edit a text file, you're good. The setup is 5 steps.
+You need to be comfortable editing a config file, running shell commands, and reading log output. You don't need to write code, but you should be able to read the 40 lines of signing logic before you fund the wallet.
 
-**What's the minimum deposit to actually make money?**
-**$3,000–$5,000** is the honest sweet spot. Below $500, markets won't fill. Above $20k needs advanced setup.
-
-**Can I run this on a cheap server instead of my computer?**
-Yes. Any $5/month VPS (DigitalOcean, Hetzner, Vultr) runs this fine. Recommended once you're past $2,000 deposited.
-
-**Is this legal where I live?**
-Polymarket restricts some regions (including the US). **Check your local laws.** This software is educational - you're responsible for how you use it.
-
-**What if the wallet I'm copying goes on a losing streak?**
-It will. That's why you diversify to 3–5 wallets minimum and rotate out underperformers.
-
-**Will the bot steal my money?**
-It signs trades locally. Nothing leaves your machine. Read the 40 lines of signing code yourself before funding.
-
-**How often do I need to check on it?**
-Every 2–3 days. Make sure it's running, logs look clean, database is filling up. Takes 5 minutes.
+**Can I run this on a VPS?**
+Yes — any $5/month VPS (DigitalOcean, Hetzner, Vultr) is sufficient. Recommended once you're depositing more than a trivial amount, so that the bot continues running when your laptop is closed.
 
 **What happens if my internet drops?**
-The bot pauses until connection returns. No trades missed permanently - but use a reliable RPC and consider a VPS for serious deposits.
+The bot pauses until the connection returns. You will miss trades that occurred during the outage; there is no backfill. This is a good reason to run on a VPS with reliable networking.
+
+**Is this legal?**
+Polymarket restricts access from several jurisdictions, including the United States. Running this software to place trades from a restricted jurisdiction may violate Polymarket's terms of service and/or local law. This is your responsibility to understand before using the bot.
+
+**What if the wallet I'm copying starts losing?**
+It happens to every trader eventually. This is the case for diversifying across several wallets and reviewing performance monthly. No filter in this bot will save you from consistently choosing bad wallets to copy.
+
+**Does the bot send data anywhere?**
+No external telemetry. All network calls are to the Polygon RPC, the Polymarket API, and your MongoDB instance. You can verify this by reading the code or running it behind a network monitor.
 
 ---
 
-## Useful Commands
+## Commands
 
 ```bash
-npm start            # Run the bot
-npm run dev          # Run in dev mode (auto-reloads if you edit code)
-npm run build        # Rebuild after changes
+npm start        # run the bot
+npm run dev      # run with auto-reload on file changes
+npm run build    # rebuild after editing source
 ```
 
 ---
 
-## Built With
+## Built with
 
-`TypeScript` · `Node.js` · `@polymarket/clob-client` · `ethers.js` · `MongoDB` · `axios`
+TypeScript, Node.js, `@polymarket/clob-client`, `ethers.js`, MongoDB, axios.
 
 ---
 
 ## Resources
 
-- [Polymarket Leaderboard](https://polymarket.com/leaderboard) - find wallets to copy
-- [Original QuickNode Guide](https://www.quicknode.com/guides/defi/polymarket-copy-trading-bot)
-- [Polymarket](https://polymarket.com) · [Polygon](https://polygon.technology) · [MongoDB Atlas](https://mongodb.com/atlas)
+- [Polymarket Leaderboard](https://polymarket.com/leaderboard) — wallet discovery
+- [Original QuickNode guide](https://www.quicknode.com/guides/defi/polymarket-copy-trading-bot) — the walkthrough this project extends
+- [Polymarket](https://polymarket.com), [Polygon](https://polygon.technology), [MongoDB Atlas](https://mongodb.com/atlas)
 
 ---
 
-<div align="center">
-
-### It's 2:10 AM again.
-### The market just moved.
-### You're asleep. **Your bot isn't.**
-
-<br>
-
-**[⭐ Star this repo](https://github.com/roswelly/polymarket-copy-trading-bot/)** · **[Get Started](#-install-in-5-minutes-no-coding-needed)** · **[Report an Issue](https://github.com/roswelly/polymarket-copy-trading-bot/issues)**
-
-<br>
-
-*Educational software. Not financial advice.*
-*Your capital. Your risk. Read the code before funding.*
-
-<br>
+## License and disclaimer
 
 ISC © [roswelly](https://github.com/roswelly)
 
-</div>
+This is educational software. It is not investment advice, not a financial product, and not audited. You are responsible for compliance with your local laws, for the security of your private keys, and for the outcomes of any trades it places. Read the code before funding a wallet.

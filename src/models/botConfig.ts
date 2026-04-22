@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-
+//db model
 const botConfigSchema = new Schema({
     _id: {
         type: Schema.Types.ObjectId,

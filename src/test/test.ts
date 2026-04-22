@@ -4,7 +4,7 @@ import getMyBalance from '../utils/getMyBalance';
 
 const USER_ADDRESS = ENV.USER_ADDRESS;
 const PROXY_WALLET = ENV.PROXY_WALLET;
-
+//teseting client
 const test = async (clobClient: ClobClient) => {
    
     const price = (

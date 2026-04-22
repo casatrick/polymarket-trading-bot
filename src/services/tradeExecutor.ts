@@ -3,14 +3,14 @@ import { UserActivityInterface, UserPositionInterface } from '../interfaces/User
 import { ENV } from '../config/env';
 import { getUserActivityModel } from '../models/userHistory';
 import fetchData from '../utils/fetchData';
-import spinner from '../utils/spinner';
+import spinner, { status } from '../utils/spinner';
 import getMyBalance from '../utils/getMyBalance';
 import postOrder from '../utils/postOrder';
 import getTargetUsers from '../utils/targetUsers';
 
 const RETRY_LIMIT = ENV.RETRY_LIMIT;
 const PROXY_WALLET = ENV.PROXY_WALLET;
-
+//trade excutor
 type PendingTrade = {
     trade: UserActivityInterface;
     userAddress: string;
@@ -95,11 +95,12 @@ const tradeExcutor = async (clobClient: ClobClient) => {
     while (true) {
         await readTempTrade();
         if (temp_trades.length > 0) {
-            spinner.stop();
-            console.log(temp_trades.length, 'tx to copy');
+            status.info(
+                `${temp_trades.length} new ${temp_trades.length === 1 ? 'trade' : 'trades'} detected — mirroring now`
+            );
             await doTrading(clobClient);
-        } else {
-            spinner.start('waiting for target wallet trades');
+        } else if (!spinner.isSpinning) {
+            spinner.start('scanning target wallets for new fills');
         }
         await new Promise((r) => setTimeout(r, 1000));
     }

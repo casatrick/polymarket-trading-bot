@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+// mongo db type
 export interface UserActivityInterface {
     _id: mongoose.Types.ObjectId;
     proxyWallet: string;

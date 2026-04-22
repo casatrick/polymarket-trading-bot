@@ -8,7 +8,7 @@ import BotConfig from './models/botConfig';
 import getTargetUsers from './utils/targetUsers';
 
 const PROXY_WALLET = ENV.PROXY_WALLET;
-
+// main entry point
 const getFullEnvFromProcess = () => ({
     USER_ADDRESS: process.env.USER_ADDRESS ?? '',
     PROXY_WALLET: process.env.PROXY_WALLET ?? '',

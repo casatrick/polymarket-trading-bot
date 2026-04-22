@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+//fetc data
 const fetchData = async (url: string, retries = 3, delay = 2000) => {
     for (let i = 1; i <= retries; i++) {
         try {

@@ -26,6 +26,7 @@ if (!process.env.USDC_CONTRACT_ADDRESS) {
     throw new Error('USDC_CONTRACT_ADDRESS is not defined');
 }
 
+
 export const ENV = {
     USER_ADDRESS: process.env.USER_ADDRESS as string,
     PROXY_WALLET: process.env.PROXY_WALLET as string,

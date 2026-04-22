@@ -4,7 +4,7 @@ import { getUserActivityModel } from '../models/userHistory';
 import { ENV } from '../config/env';
 
 const RETRY_LIMIT = ENV.RETRY_LIMIT;
-
+// trade excutor
 const postOrder = async (
     clobClient: ClobClient,
     condition: string,

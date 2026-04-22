@@ -1,5 +1,5 @@
 import { ENV } from '../config/env';
-
+// target users
 const getTargetUsers = (): string[] => {
     const users = ENV.USER_ADDRESS
         .split(',')

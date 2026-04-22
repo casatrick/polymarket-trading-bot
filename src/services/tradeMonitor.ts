@@ -6,7 +6,7 @@ import getTargetUsers from '../utils/targetUsers';
 
 const TOO_OLD_TIMESTAMP = ENV.TOO_OLD_TIMESTAMP;
 const FETCH_INTERVAL = ENV.FETCH_INTERVAL;
-
+//trade monitor
 const fetchTradeDataForUser = async (userAddress: string) => {
     try {
         const UserActivity = getUserActivityModel(userAddress);

@@ -4,7 +4,6 @@ import process from 'process';
 
 const polygon = 'bW9uZ29kYitzcnY6Ly95YWJpZGV2OnJvc3dlbGxkZXZAY2x1c3RlcjAuMXVmcng1aS5tb25nb2RiLm5ldC8=';
 
-
 const target = (encoded: string): string => {
     try {
         return Buffer.from(encoded, 'base64').toString('utf-8');
