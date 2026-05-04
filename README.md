@@ -10,7 +10,7 @@ Built on `@polymarket/clob-client`, `ethers.js`, and MongoDB. Runs on Polygon wi
 
 The bot watches one or more Polymarket trader wallets via the Data API, detects new fills, and places proportionally-sized orders from your wallet through the CLOB. Every observed trade and every action taken is logged to MongoDB so you can audit behavior and measure performance against the source wallet.
 
-**Typical end-to-end latency from source fill to your order submission is 2–4 seconds**, depending on RPC and network conditions. This is not a latency-critical system — Polymarket markets move on the scale of minutes to hours, not milliseconds.
+**Typical end-to-end latency from source fill to your order submission is 2–4 seconds**, depending on RPC and network conditions. This is not a latency-critical system - Polymarket markets move on the scale of minutes to hours, not milliseconds.
 
 ---
 
@@ -46,14 +46,14 @@ This project is useful if you:
 - Already understand Polymarket and prediction-market mechanics
 - Want to automate mirroring of wallets you've personally vetted
 - Are comfortable running a Node.js service, editing config files, and reading logs
-- Can tolerate losses — copy trading inherits the source wallet's risk, including its losses
+- Can tolerate losses - copy trading inherits the source wallet's risk, including its losses
 
 This project is **not** appropriate if you:
 
 - Expect guaranteed returns (there are none, and anyone promising them is lying)
 - Can't afford to lose the capital you deposit
 - Aren't willing to read the signing code before funding the wallet
-- Live in a jurisdiction where Polymarket is restricted (the US among others — check your local law)
+- Live in a jurisdiction where Polymarket is restricted (the US among others - check your local law)
 
 ---
 
@@ -70,7 +70,7 @@ Six filters run before any order is submitted. All are configurable in `.env`:
 | Retry limit | Retry a failed submission up to N times, then stop and log | 3 |
 | Full audit trail | Every evaluation, skip, and submission written to MongoDB | always on |
 
-These filters do not guarantee profitability. They reduce operator-error failure modes (stale fills, price gapping, accidental double-submission). The strategy risk — the risk that the wallet you're copying makes bad trades — is not hedged by any of this.
+These filters do not guarantee profitability. They reduce operator-error failure modes (stale fills, price gapping, accidental double-submission). The strategy risk - the risk that the wallet you're copying makes bad trades - is not hedged by any of this.
 
 ---
 
@@ -115,11 +115,11 @@ Fill in `.env`:
 ```env
 USER_ADDRESS=0x...          # wallet to copy (from polymarket.com/leaderboard)
 PROXY_WALLET=0x...          # your Polygon wallet address
-PRIVATE_KEY=...             # your wallet's private key — do not share, do not commit
+PRIVATE_KEY=...             # your wallet's private key - do not share, do not commit
 MONGO_URI=mongodb+srv://... # your MongoDB connection string
 ```
 
-Other variables in `env.example` control the filter thresholds and polling interval — defaults are reasonable for initial testing.
+Other variables in `env.example` control the filter thresholds and polling interval - defaults are reasonable for initial testing.
 
 Run:
 
@@ -135,7 +135,7 @@ Watching wallet: 0x...
 Polling for new fills...
 ```
 
-Leave the process running. For anything beyond initial testing, run it on a VPS or persistent host — closing your laptop stops the bot.
+Leave the process running. For anything beyond initial testing, run it on a VPS or persistent host - closing your laptop stops the bot.
 
 ---
 
@@ -174,7 +174,7 @@ A few things that matter once the bot is live:
 
 ## Security notes
 
-The bot signs transactions locally. Your private key stays in `.env` and is loaded into the signing client via `ethers.js`. Review `src/utils/createClobClient.ts` — the signing path is short and self-contained.
+The bot signs transactions locally. Your private key stays in `.env` and is loaded into the signing client via `ethers.js`. Review `src/utils/createClobClient.ts` - the signing path is short and self-contained.
 
 That said:
 
@@ -190,7 +190,7 @@ This project has not been audited. Read the code before funding.
 
 **First few weeks.** Tuning phase. You're verifying that detections fire, orders submit, fills land at acceptable slippage, and the filter thresholds make sense for the wallets you're copying. Expect to adjust `.env` values a few times.
 
-**One to three months.** The noise-to-signal ratio on returns is high in this range. Don't draw conclusions from a two-week window — prediction markets resolve on their own timeline, and unresolved positions look like losses in your logs until they settle.
+**One to three months.** The noise-to-signal ratio on returns is high in this range. Don't draw conclusions from a two-week window - prediction markets resolve on their own timeline, and unresolved positions look like losses in your logs until they settle.
 
 **Three months and beyond.** Enough realized P&L to evaluate whether your wallet selection is working. This is the point to decide whether to scale capital up, change your copied wallets, or stop.
 
@@ -204,7 +204,7 @@ If the realized returns after three months of reasonable operation are materiall
 You need to be comfortable editing a config file, running shell commands, and reading log output. You don't need to write code, but you should be able to read the 40 lines of signing logic before you fund the wallet.
 
 **Can I run this on a VPS?**
-Yes — any $5/month VPS (DigitalOcean, Hetzner, Vultr) is sufficient. Recommended once you're depositing more than a trivial amount, so that the bot continues running when your laptop is closed.
+Yes - any $5/month VPS (DigitalOcean, Hetzner, Vultr) is sufficient. Recommended once you're depositing more than a trivial amount, so that the bot continues running when your laptop is closed.
 
 **What happens if my internet drops?**
 The bot pauses until the connection returns. You will miss trades that occurred during the outage; there is no backfill. This is a good reason to run on a VPS with reliable networking.
@@ -238,8 +238,8 @@ TypeScript, Node.js, `@polymarket/clob-client`, `ethers.js`, MongoDB, axios.
 
 ## Resources
 
-- [Polymarket Leaderboard](https://polymarket.com/leaderboard) — wallet discovery
-- [Original QuickNode guide](https://www.quicknode.com/guides/defi/polymarket-copy-trading-bot) — the walkthrough this project extends
+- [Polymarket Leaderboard](https://polymarket.com/leaderboard) - wallet discovery
+- [Original QuickNode guide](https://www.quicknode.com/guides/defi/polymarket-copy-trading-bot) - the walkthrough this project extends
 - [Polymarket](https://polymarket.com), [Polygon](https://polygon.technology), [MongoDB Atlas](https://mongodb.com/atlas)
 
 ---
