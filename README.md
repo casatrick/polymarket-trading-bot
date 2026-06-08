@@ -18,7 +18,6 @@
 ## Contact Me at Telegram
 
 [roswellecho](https://t.me/roswellecho)
-[polymarket document](https://docs.polymarket.com/)
 
 ---
 
@@ -33,7 +32,6 @@
 - [Trading Modes](#trading-modes)
 - [Risk Management](#risk-management)
 - [Backtesting](#backtesting)
-- [Best Server Setup](#best-server-setup)
 - [FAQ](#faq)
 - [Disclaimer](#disclaimer)
 
@@ -145,33 +143,6 @@ The bot includes a **Next.js real-time dashboard** with 8 monitoring panels:
 - npm or yarn
 - A Polymarket account (for live/paper trading)
 - An Anthropic API key (for dashboard chat feature)
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/polymarket-trading-bot.git
-cd polymarket-trading-bot
-
-# Install dependencies
-npm install
-
-# Copy environment template
-cp .env.example .env.local
-
-# Run in development mode
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see the dashboard.
-
-### Dependencies
-
-```bash
-npm install next react recharts better-sqlite3 ethers ws @anthropic-ai/sdk
-npm install -D typescript @types/node @types/react tailwindcss
-```
-
 ---
 
 ## Configuration
