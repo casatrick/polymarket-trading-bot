@@ -72,13 +72,6 @@ Time to resolution: <60 seconds
 | Asset | BTC only | Highest Polymarket liquidity, most orderly final candle |
 | Timeframe | 5, 15-minute markets only | More orderly than 5-minute, better final candle stability |
 
-### Why NOT 5-Minute or SOL/XRP/ETH Markets
-
-- **5-minute BTC:** Too volatile in the last candle. A single large order can flip a 0.88 probability to 0.40 in under 5, 15 seconds.
-- **ETH:** Lower Polymarket liquidity than BTC, wider spreads in the final seconds, and slightly less orderly resolution behaviour.
-- **SOL:** Thinner Polymarket order book, frequent violent wicks near resolution.
-- **XRP:** News-driven and erratic. Spread widens unpredictably in the final seconds.
-
 ### Math: When Does Edge Exist?
 
 ```
