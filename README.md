@@ -1,251 +1,428 @@
-# Polymarket Copy Trading Bot
+# Polymarket Trading Bot - Late-Entry Probability Capture Strategy
 
-A TypeScript service that mirrors trades from selected Polymarket wallets into your own wallet, in near real time, with configurable position sizing and safety filters.
+> Automated trading bot for Polymarket prediction markets. Targets high-probability BTC 5,15-minute markets in the final 60 seconds before resolution. Includes live trading, paper trading, and backtesting modes with a real-time dashboard.
 
-Built on `@polymarket/clob-client`, `ethers.js`, and MongoDB. Runs on Polygon with USDC.
-
----
-
-## What it does
-
-The bot watches one or more Polymarket trader wallets via the Data API, detects new fills, and places proportionally-sized orders from your wallet through the CLOB. Every observed trade and every action taken is logged to MongoDB so you can audit behavior and measure performance against the source wallet.
-
-**Typical end-to-end latency from source fill to your order submission is 2–4 seconds**, depending on RPC and network conditions. This is not a latency-critical system - Polymarket markets move on the scale of minutes to hours, not milliseconds.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Polygon](https://img.shields.io/badge/Blockchain-Polygon-8247e5)](https://polygon.technology/)
+[![Polymarket](https://img.shields.io/badge/Platform-Polymarket-00b4d8)](https://polymarket.com/)
 
 ---
 
-## How it works
+## Contact Me at Telegram
+
+[roswellecho](https://t.me/roswellecho)
+[polymarket document](https://docs.polymarket.com/)
+
+---
+
+## Table of Contents
+
+- [What This Bot Does](#what-this-bot-does)
+- [Strategy Logic](#strategy-logic)
+- [Key Features](#key-features)
+- [Dashboard](#dashboard)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Trading Modes](#trading-modes)
+- [Risk Management](#risk-management)
+- [Backtesting](#backtesting)
+- [Best Server Setup](#best-server-setup)
+- [FAQ](#faq)
+- [Disclaimer](#disclaimer)
+
+---
+
+## What This Bot Does
+
+This is an open-source **Polymarket trading bot** that implements a **late-entry probability capture** strategy on BTC prediction markets. Instead of predicting price direction, the bot identifies near-certain outcomes in the final 30–60 seconds before market resolution and captures the remaining uncertainty premium.
+
+**Target markets:** BTC 5, 15-minute price markets on Polymarket  
+**Entry window:** 30–60 seconds before market close  
+**Entry condition:** YES probability > 85%  
+**Edge:** Mispricing in the final seconds due to thin order books  
+
+---
+
+## Strategy Logic
+
+### Core Concept
+
+When a Polymarket 5, 15-minute BTC market has 45 seconds left and YES sits at 0.88, there is still a 12% implied chance of reversal priced into the market. The bot asks: *is that 12% uncertainty actually warranted, or is the market mispriced?*
 
 ```
-Source wallet fills a trade on Polymarket
-        │
-        ▼
-Polling loop detects the new fill via Data API
-        │
-        ▼
-Safety filters evaluate the trade (age, slippage, size, duplicates)
-        │
-        ▼
-Position sizing: your order is scaled to (your_balance / source_balance)
-        │
-        ▼
-CLOB client signs and submits the order from your wallet
-        │
-        ▼
-Result logged to MongoDB (success, failure, or skip with reason)
+Entry:  Buy YES at 0.88
+Payout: 1.00 on resolution
+Gross return: (1.00 - 0.88) / 0.88 = +13.6%
+Net return after 2% fee: ~+11.6%
+Time to resolution: <60 seconds
 ```
 
-The copy scale is proportional to balances. If the source wallet holds $50,000 and places a $10,000 position (20% of their capital), and your wallet holds $3,000, the bot submits a $600 position (20% of your capital). You can override the scale in the config.
+### Entry Conditions (all must be true)
+
+| Condition | Threshold | Reason |
+|-----------|-----------|--------|
+| YES probability | > 0.85 | Below this the risk/reward breaks down |
+| Time remaining | 5–60 seconds | Outside this window edge disappears |
+| Order book spread | < 2% of implied probability | Wide spread destroys fill quality |
+| Asset | BTC only | Highest Polymarket liquidity, most orderly final candle |
+| Timeframe | 5, 15-minute markets only | More orderly than 5-minute, better final candle stability |
+
+### Why NOT 5-Minute or SOL/XRP/ETH Markets
+
+- **5-minute BTC:** Too volatile in the last candle. A single large order can flip a 0.88 probability to 0.40 in under 5, 15 seconds.
+- **ETH:** Lower Polymarket liquidity than BTC, wider spreads in the final seconds, and slightly less orderly resolution behaviour.
+- **SOL:** Thinner Polymarket order book, frequent violent wicks near resolution.
+- **XRP:** News-driven and erratic. Spread widens unpredictably in the final seconds.
+
+### Math: When Does Edge Exist?
+
+```
+Break-even win rate = entry price (e.g. 0.88 = need 88%+ wins)
+After 2% fee:        need win rate > entry price + 0.02
+After 3% slippage:   edge is completely gone
+```
+
+The edge only exists when markets are **systematically mispriced** in the final 60 seconds - which happens because most liquidity providers pull their orders near resolution, leaving temporary mispricings.
 
 ---
 
-## Who should use this
+## Key Features
 
-This project is useful if you:
-
-- Already understand Polymarket and prediction-market mechanics
-- Want to automate mirroring of wallets you've personally vetted
-- Are comfortable running a Node.js service, editing config files, and reading logs
-- Can tolerate losses - copy trading inherits the source wallet's risk, including its losses
-
-This project is **not** appropriate if you:
-
-- Expect guaranteed returns (there are none, and anyone promising them is lying)
-- Can't afford to lose the capital you deposit
-- Aren't willing to read the signing code before funding the wallet
-- Live in a jurisdiction where Polymarket is restricted (the US among others - check your local law)
+- **Three trading modes:** Live, Paper (simulated), and Backtest
+- **Real-time WebSocket feed** from Polymarket CLOB API
+- **Spread monitoring:** Hard abort if spread exceeds 2% threshold
+- **Slippage tracking:** Compares expected fill vs actual fill on every trade
+- **Fee drag analysis:** Tracks cumulative fee cost vs gross profit
+- **Edge Score metric:** Tells you in real time whether the strategy is working
+- **Risk manager:** Auto-pauses at 8% drawdown, auto-stops at 15%
+- **AI-powered dashboard chat:** Ask the bot to explain any metric in plain language
+- **Full trade log:** Every trade recorded with timestamp, fill price, slippage, and outcome
 
 ---
 
-## Safety filters
+## Dashboard
 
-Six filters run before any order is submitted. All are configurable in `.env`:
+The bot includes a **Next.js real-time dashboard** with 8 monitoring panels:
 
-| Filter | Purpose | Default |
-|---|---|---|
-| Trade age | Skip trades older than N seconds when detected | 24 hours |
-| Price drift | Skip if market price has moved more than X% from the source's fill price | 5% |
-| Balance cap | Cap order size at a fraction of your wallet balance | configurable |
-| Duplicate detection | Compare against recent order history in MongoDB to prevent replays | enabled |
-| Retry limit | Retry a failed submission up to N times, then stop and log | 3 |
-| Full audit trail | Every evaluation, skip, and submission written to MongoDB | always on |
+### Panels
 
-These filters do not guarantee profitability. They reduce operator-error failure modes (stale fills, price gapping, accidental double-submission). The strategy risk - the risk that the wallet you're copying makes bad trades - is not hedged by any of this.
+| Panel | What It Shows |
+|-------|---------------|
+| **Market Scanner** | Live BTC 5, 15m markets with countdown timers, spread status, and entry signals |
+| **Metrics Cards** | Win rate, avg return, avg slippage, fee drag, edge score, drawdown |
+| **Spread Monitor** | Real-time spread chart with 2% abort threshold line |
+| **Slippage Tracker** | Scatter plot of expected vs actual fill prices |
+| **P&L Chart** | Cumulative gross vs net P&L over time, drawdown shaded |
+| **Trade Log** | Full table of all trades across all modes |
+| **Backtest Config** | Date range, slippage model, asset selection, equity curve output |
+| **Chat Panel** | Ask questions about any metric - powered by Claude AI |
 
----
+### Dashboard Chat Examples
 
-## Position sizing, honestly
+> **"Why did the bot abort that last trade?"**  
+> *"The spread on that BTC market widened to 0.019 in the final 45 seconds - just above the 2% threshold. The risk manager flagged it ABORT."*
 
-Proportional sizing solves one problem: you can follow a large trader without having their capital. It does not solve the harder problems:
+> **"Is my slippage getting worse?"**  
+> *"Your average slippage over the last 10 trades is 2.1%, up from 1.4% earlier. If it hits 3%, the edge disappears entirely. Consider pausing."*
 
-- **Slippage is worse at your scale than theirs on thin markets.** A $600 order in a $5,000-liquidity market eats a larger share of the book than the source's $10,000 order did in a $100,000 market they were trading. Your fill price will usually be worse.
-- **Entry timing matters.** You're always arriving 2–4 seconds after the source. For markets that move fast on news, that gap costs you price.
-- **You can't copy exits perfectly.** If the source wallet exits during downtime, your position is still open. Run the bot on a reliable host if you scale up capital.
-
-Expect your realized return to be **lower than the source wallet's return**, not equal to it. A reasonable working assumption is 70–85% of the source's return on comparable time horizons, with higher variance on small positions.
-
----
-
-## Deposit sizing guidance
-
-There is no "right" amount. This is a rough framing of what the tradeoffs look like:
-
-- **Under $500.** Many orders won't fill because your proportional size is below the market's minimum tick × liquidity threshold. Not recommended unless you're testing.
-- **$500 – $2,000.** Usable for testing the full pipeline against real execution. Dollar gains and losses will be small. Good for calibrating before scaling.
-- **$3,000 – $10,000.** Enough capital for orders to fill reliably on most active markets. Still small enough that a single bad wallet choice won't ruin you.
-- **$10,000+.** Requires more attention to wallet selection, slippage monitoring, and infrastructure (paid RPC, VPS, monitoring). Not a set-and-forget range.
-
-None of these are recommendations. They're observations about how market minimums and fill probability scale with position size. Start smaller than you think you should.
+> **"What is the edge score?"**  
+> *"Edge Score = (your actual win rate minus the implied probability) × 100. You're at +4.2, meaning you're winning 4.2% more than the market expects. Below 0 means stop trading."*
 
 ---
 
 ## Installation
 
-Prerequisites: Node.js 18+, Git, MongoDB (Atlas free tier works), a Polygon wallet with USDC.
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- A Polymarket account (for live/paper trading)
+- An Anthropic API key (for dashboard chat feature)
+
+### Setup
 
 ```bash
-git clone https://github.com/roswelly/polymarket-copy-trading-bot.git
-cd polymarket-copy-trading-bot
+# Clone the repository
+git clone https://github.com/yourusername/polymarket-trading-bot.git
+cd polymarket-trading-bot
+
+# Install dependencies
 npm install
-cp env.example .env
+
+# Copy environment template
+cp .env.example .env.local
+
+# Run in development mode
+npm run dev
 ```
 
-Fill in `.env`:
+Open [http://localhost:3000](http://localhost:3000) to see the dashboard.
+
+### Dependencies
+
+```bash
+npm install next react recharts better-sqlite3 ethers ws @anthropic-ai/sdk
+npm install -D typescript @types/node @types/react tailwindcss
+```
+
+---
+
+## Configuration
+
+Edit `.env.local`:
 
 ```env
-USER_ADDRESS=0x...          # wallet to copy (from polymarket.com/leaderboard)
-PROXY_WALLET=0x...          # your Polygon wallet address
-PRIVATE_KEY=...             # your wallet's private key - do not share, do not commit
-MONGO_URI=mongodb+srv://... # your MongoDB connection string
+# Polymarket API (required for live and paper trading)
+POLYMARKET_API_KEY=your_polymarket_api_key
+
+# Wallet private key (ONLY required for live trading mode)
+# Paper trading and backtest work without this
+POLYMARKET_PRIVATE_KEY=your_wallet_private_key
+
+# Anthropic API key (for dashboard chat panel)
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# Paper trading starting balance
+NEXT_PUBLIC_PAPER_STARTING_BALANCE=1000
+
+# Strategy parameters (optional overrides)
+STRATEGY_MIN_PROBABILITY=0.85
+STRATEGY_MAX_SPREAD_PCT=0.02
+STRATEGY_MAX_SLIPPAGE_PCT=0.03
+STRATEGY_ENTRY_WINDOW_SECONDS=60
 ```
 
-Other variables in `env.example` control the filter thresholds and polling interval - defaults are reasonable for initial testing.
+### Getting API Keys
 
-Run:
+| Key | Where to get it | Cost |
+|-----|----------------|------|
+| Polymarket API | [docs.polymarket.com](https://docs.polymarket.com) | Free |
+| Anthropic API | [console.anthropic.com](https://console.anthropic.com) | Free tier available |
+| Wallet private key | Export from MetaMask or generate new | - |
+
+---
+
+## Trading Modes
+
+### Paper Trading (Default - Recommended to Start)
+
+Paper trading uses **real Polymarket market data** but executes no on-chain transactions. Simulates realistic slippage (0.3–3%) to give honest performance estimates.
 
 ```bash
-npm run build && npm start
+# Paper mode is the default - just run the bot
+npm run dev
+# Select "PAPER" in the dashboard mode toggle
 ```
 
-You should see:
+Paper trading is the **safe way to validate** the strategy before committing real capital. Run at least 50–100 paper trades before going live.
+
+### Live Trading
+
+Live mode requires a funded Polygon wallet and executes real trades via the Polymarket CLOB API.
+
+> ⚠️ **Live mode is locked behind a confirmation dialog.** You must explicitly enable it - the bot will never trade real money by accident.
+
+```bash
+# Ensure POLYMARKET_PRIVATE_KEY is set in .env.local
+# Select "LIVE" in the dashboard and confirm the warning dialog
+```
+
+### Backtest Mode
+
+Backtest replays historical Polymarket market data against the strategy logic.
+
+**Slippage models available:**
+
+| Model | Simulated Slippage | Use For |
+|-------|-------------------|---------|
+| None | 0% | Theoretical maximum |
+| Low | 0.3–1% | Best-case realistic |
+| Realistic | 0.8–3% | **Default - use this** |
+| Severe | 2–6% | Stress testing |
+
+> ⚠️ Always use **Realistic** slippage for backtesting. The `None` model produces unrealistically optimistic results and should only be used to understand theoretical edge.
+
+---
+
+## Risk Management
+
+The bot's risk manager runs on every potential trade and enforces three hard rules:
+
+### Rule 1: Spread Guard (Hard Abort)
 
 ```
-Connected to MongoDB
-Watching wallet: 0x...
-Polling for new fills...
+Max allowed spread = implied probability × 0.02
+
+Example: YES = 0.88
+Max spread = 0.88 × 0.02 = 0.0176
+
+If actual spread > 0.0176 → ABORT (do not enter)
 ```
 
-Leave the process running. For anything beyond initial testing, run it on a VPS or persistent host - closing your laptop stops the bot.
+This protects against paying too much to enter the trade in thin end-of-market order books.
+
+### Rule 2: Slippage Tracking (Session Halt)
+
+The bot records expected fill price vs actual fill price on every trade.
+
+```
+Slippage threshold: 3%
+If rolling 10-trade average slippage > 3% → HALT trading
+
+Reason: At 3% average slippage, the edge from a 0.88 entry is completely eliminated.
+```
+
+### Rule 3: Drawdown Protection
+
+```
+8% drawdown from peak → PAUSE (review required)
+15% drawdown from peak → FULL STOP (session ended)
+```
+
+### Edge Score
+
+The dashboard shows a live **Edge Score**:
+
+```
+Edge Score = (actual win rate - implied probability) × 100
+
++5.0 = winning 5% more than market expects (healthy)
+ 0.0 = breaking even (fees will make this negative overall)
+-3.0 = losing - stop trading immediately
+```
 
 ---
 
-## Wallet selection
+## Backtesting
 
-This is the variable that determines outcomes, not the bot itself. The bot is a transport mechanism; the wallet you copy is the strategy.
+### Running a Backtest
 
-Use [polymarket.com/leaderboard](https://polymarket.com/leaderboard) and filter for wallets that show:
+1. Navigate to the **Backtest** tab in the dashboard
+2. Select asset (BTC only)
+3. Choose date range
+4. Set starting balance and position size %
+5. Choose slippage model (**use Realistic**)
+6. Click "Run Backtest"
 
-- Consistent profit across many uncorrelated markets, not one windfall
-- A track record spanning at least several months
-- Reasonable position sizing relative to their bankroll (not 80% on single bets)
-- Recovery from drawdowns without blowing up
+### Backtest Output
 
-A wallet that went +$200k on one election is not necessarily skilled. A wallet that is +30% over 200 trades across different categories probably is.
+```
+Total trades:        247
+Win rate:            91.5%
+Gross return:        +34.2%
+Fee drag:            -18.4% (fees cost $184 on $1000)
+Net return:          +15.8%
+Max drawdown:        -7.2%
+Sharpe ratio:        1.84
 
-Common starting point: copy one wallet for the first few weeks, watch the logs, verify that fills look sane, then diversify to 3–5 wallets to reduce single-wallet risk. Copying 10+ wallets simultaneously produces more noise than signal at small deposit sizes.
+Trades aborted by risk manager:
+  Low probability:   43
+  Spread too wide:   31
+  Slippage model:    18
+  Wrong time window: 12
+```
 
----
-
-## Operational guidance
-
-A few things that matter once the bot is live:
-
-**Use a paid RPC.** Free public Polygon RPCs rate-limit and drop requests under load. Alchemy, QuickNode, and Infura paid tiers are all fine. A dropped poll means a missed trade.
-
-**Monitor the logs, at least weekly.** You want to see fill rate (what percentage of detected source trades resulted in a successful mirror), average slippage versus the source's fill price, and the skip breakdown by filter. MongoDB aggregation queries against the logs collection will give you this.
-
-**Set a drawdown stop.** Decide before you deposit how much loss would cause you to turn the bot off. Without that, you'll rationalize through a losing month.
-
-**Rotate wallets.** Good traders go cold. Review your copied wallets monthly against their recent performance on the Polymarket leaderboard and drop ones that have underperformed for two-plus months.
-
-**Use a dedicated wallet.** Never point the bot at a wallet holding funds you can't afford to put at risk. The private key sits in `.env` on whatever machine you're running on.
-
----
-
-## Security notes
-
-The bot signs transactions locally. Your private key stays in `.env` and is loaded into the signing client via `ethers.js`. Review `src/utils/createClobClient.ts` - the signing path is short and self-contained.
-
-That said:
-
-- `.env` is a plaintext file on your host. If your machine is compromised, so is the key. Consider disk encryption and standard host hardening if you're running meaningful capital.
-- There is no built-in spend cap at the signing layer. If the trade-execution code has a bug that sizes an order incorrectly, the signer will sign it. Keep deposits proportional to your trust in the code you've reviewed.
-- Exported MongoDB logs contain your wallet address and trading history. Treat them as sensitive.
-
-This project has not been audited. Read the code before funding.
+The **fee drag section** is the most important output. It shows how much of your gross return is consumed by Polymarket's ~2% fee across many trades. High trade frequency amplifies fee drag significantly.
 
 ---
 
-## What to expect in the first few months
+## Best Server Setup
 
-**First few weeks.** Tuning phase. You're verifying that detections fire, orders submit, fills land at acceptable slippage, and the filter thresholds make sense for the wallets you're copying. Expect to adjust `.env` values a few times.
+For a production trading bot, latency to Polymarket's matching engine matters - especially for 60-second entry windows.
 
-**One to three months.** The noise-to-signal ratio on returns is high in this range. Don't draw conclusions from a two-week window - prediction markets resolve on their own timeline, and unresolved positions look like losses in your logs until they settle.
+### Recommended: Dublin, Ireland (AWS eu-west-1)
 
-**Three months and beyond.** Enough realized P&L to evaluate whether your wallet selection is working. This is the point to decide whether to scale capital up, change your copied wallets, or stop.
+Polymarket's CLOB API infrastructure is hosted in **London (AWS eu-west-2)**. The closest low-latency, non-geoblocked region is Dublin.
 
-If the realized returns after three months of reasonable operation are materially negative versus the source wallets, the issue is usually one of: RPC reliability (missed trades), slippage (thin markets at your size), or wallet selection (the source wasn't as good as the leaderboard suggested). The bot itself is rarely the limiting factor.
+| Location | Latency | Recommended |
+|----------|---------|-------------|
+| Dublin, Ireland (AWS eu-west-1) | <5ms | ✅ Best |
+| Amsterdam | ~10ms | ✅ Good |
+| US East Coast | ~130ms | ❌ Too slow |
+| Asia | 200ms+ | ❌ Unusable |
+
+### Geoblocking Note
+
+Polymarket blocks IP addresses from the US, UK, France, Germany, Australia, Singapore, and 28 other countries. A Dublin VPS gives you both the lowest latency **and** a non-blocked IP address simultaneously.
+
+### VPS Options
+
+- **AWS EC2 eu-west-1** (Dublin) - most reliable, pay-as-you-go
+- **Vultr Amsterdam** - cheaper, ~10ms latency
+- **TradingVPS Dublin** - trading-specific, fixed monthly cost
 
 ---
 
 ## FAQ
 
-**Do I need to know how to code?**
-You need to be comfortable editing a config file, running shell commands, and reading log output. You don't need to write code, but you should be able to read the 40 lines of signing logic before you fund the wallet.
+**Q: Does this strategy actually work?**  
+A: The theoretical edge is real - mispricings do occur in the final seconds. Whether it's profitable after fees and slippage depends on your fill quality. Always validate with paper trading first. Past performance in backtests does not guarantee live results.
 
-**Can I run this on a VPS?**
-Yes - any $5/month VPS (DigitalOcean, Hetzner, Vultr) is sufficient. Recommended once you're depositing more than a trivial amount, so that the bot continues running when your laptop is closed.
+**Q: Why only BTC 5, 15-minute markets?**  
+A: BTC has the deepest Polymarket liquidity, tightest spreads, and most orderly price action in the final candle. ETH has lower liquidity and slightly wider spreads near resolution. Other assets (SOL, XRP).
 
-**What happens if my internet drops?**
-The bot pauses until the connection returns. You will miss trades that occurred during the outage; there is no backfill. This is a good reason to run on a VPS with reliable networking.
+**Q: What position size should I use?**  
+A: The bot defaults to 5% of balance per trade. This allows for a 20-trade losing streak before significant capital loss, which is appropriate given the high win-rate target.
 
-**Is this legal?**
-Polymarket restricts access from several jurisdictions, including the United States. Running this software to place trades from a restricted jurisdiction may violate Polymarket's terms of service and/or local law. This is your responsibility to understand before using the bot.
+**Q: What is Polymarket's fee?**  
+A: Approximately 2% per trade. This is the single biggest drag on profitability - 10 trades per hour at 2% each compounds significantly. The fee drag panel in the dashboard tracks this in real time.
 
-**What if the wallet I'm copying starts losing?**
-It happens to every trader eventually. This is the case for diversifying across several wallets and reviewing performance monthly. No filter in this bot will save you from consistently choosing bad wallets to copy.
+**Q: Can I run this on Windows?**  
+A: Yes, but a Linux VPS in Dublin is strongly recommended for production use due to better performance and lower latency.
 
-**Does the bot send data anywhere?**
-No external telemetry. All network calls are to the Polygon RPC, the Polymarket API, and your MongoDB instance. You can verify this by reading the code or running it behind a network monitor.
+**Q: Is this legal?**  
+A: Polymarket is a prediction market platform operating on the Polygon blockchain. Check the laws in your jurisdiction before trading. This repository is for educational purposes.
 
 ---
 
-## Commands
+## Project Structure
 
-```bash
-npm start        # run the bot
-npm run dev      # run with auto-reload on file changes
-npm run build    # rebuild after editing source
+```
+polymarket-bot/
+├── app/                    # Next.js App Router pages and API routes
+│   ├── page.tsx            # Main dashboard
+│   └── api/                # Backend API routes
+├── components/             # React dashboard components
+├── lib/
+│   ├── strategy.ts         # Core entry logic
+│   ├── riskManager.ts      # Spread/slippage/drawdown guards
+│   ├── paperTrader.ts      # Paper trading simulator
+│   ├── backtester.ts       # Historical backtest engine
+│   └── polymarket.ts       # CLOB API + WebSocket client
+├── hooks/                  # React hooks for real-time data
+└── types/                  # Shared TypeScript types
 ```
 
 ---
 
-## Built with
+## Contributing
 
-TypeScript, Node.js, `@polymarket/clob-client`, `ethers.js`, MongoDB, axios.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
----
-
-## Resources
-
-- [Polymarket Leaderboard](https://polymarket.com/leaderboard) - wallet discovery
-- [Original QuickNode guide](https://www.quicknode.com/guides/defi/polymarket-copy-trading-bot) - the walkthrough this project extends
-- [Polymarket](https://polymarket.com), [Polygon](https://polygon.technology), [MongoDB Atlas](https://mongodb.com/atlas)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
 
 ---
 
-## License and disclaimer
+## Disclaimer
 
-ISC © [roswelly](https://github.com/roswelly)
+This software is for **educational and research purposes only**. Trading on prediction markets involves substantial risk of loss. The strategy described does not guarantee profits. Past backtest performance does not predict future results. Slippage, fees, and market conditions in live trading will differ from simulations.
 
-This is educational software. It is not investment advice, not a financial product, and not audited. You are responsible for compliance with your local laws, for the security of your private keys, and for the outcomes of any trades it places. Read the code before funding a wallet.
+Never trade with money you cannot afford to lose. Always start with paper trading mode.
+
+The authors are not financial advisors. Nothing in this repository constitutes financial advice.
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+*Built with Next.js, TypeScript, Recharts, ethers.js, and the Polymarket CLOB API. BTC 5,15-minute markets only.*

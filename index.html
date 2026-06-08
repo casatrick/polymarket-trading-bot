@@ -10,15 +10,15 @@
   <meta name="keywords" content="polymarket copy trading bot, polymarket bot, polymarket automated trading, prediction market bot, polygon trading bot, USDC trading bot, copy trading polygon, polymarket wallet tracker, make money on polymarket, polymarket passive income" />
   <meta name="author" content="roswelly" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
-  <link rel="canonical" href="https://roswelly.github.io/polymarket-copy-trading-bot/" />
+  <link rel="canonical" href="https://roswelly.github.io/polymarket-trading-bot/" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Polymarket Copy Trading Bot - Mirror Top Wallets Automatically" />
   <meta property="og:description" content="Copy the smartest traders on Polymarket, in under 3 seconds, 24/7. Start with $3,000. Open source, TypeScript, MIT-audited." />
-  <meta property="og:url" content="https://roswelly.github.io/polymarket-copy-trading-bot/" />
+  <meta property="og:url" content="https://roswelly.github.io/polymarket-trading-bot/" />
   <meta property="og:site_name" content="Polymarket Copy Trading Bot" />
-  <meta property="og:image" content="https://opengraph.githubassets.com/1/roswelly/polymarket-copy-trading-bot" />
+  <meta property="og:image" content="https://opengraph.githubassets.com/1/roswelly/polymarket-trading-bot" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -32,7 +32,7 @@
     "@type": "SoftwareApplication",
     "name": "Polymarket Copy Trading Bot",
     "description": "Open-source TypeScript bot that mirrors top Polymarket wallets in under 3 seconds. Automated copy trading on Polygon prediction markets.",
-    "url": "https://github.com/roswelly/polymarket-copy-trading-bot",
+    "url": "https://github.com/roswelly/polymarket-trading-bot",
     "applicationCategory": "FinanceApplication",
     "operatingSystem": "Windows, macOS, Linux",
     "offers": {
@@ -398,13 +398,13 @@
 
 <nav>
   <div class="nav-inner">
-    <div class="logo"><span class="logo-dot"></span> Polymarket Copy Bot</div>
+    <div class="logo"><span class="logo-dot"></span> Polymarket Trading Bot</div>
     <div class="nav-links">
       <a href="#how">How it works</a>
       <a href="#deposit">Deposit</a>
       <a href="#install">Install</a>
       <a href="#faq">FAQ</a>
-      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" target="_blank" rel="noopener">GitHub →</a>
+      <a href="https://github.com/roswelly/polymarket-trading-bot" target="_blank" rel="noopener">GitHub →</a>
     </div>
   </div>
 </nav>
@@ -412,16 +412,14 @@
 <header class="hero">
   <div class="container hero-inner">
     <div class="badge"><span class="badge-dot"></span> Open source · Runs 24/7 · No subscription</div>
-    <h1>Copy the smartest wallets on <span class="gradient">Polymarket</span><br />- automatically.</h1>
-    <p class="hero-sub">Mirror top-performing traders in under 3 seconds. Start with $3,000, sleep through the trades, wake up to positions that match the pros.</p>
     <div class="cta-row">
       <a href="#install" class="btn btn-primary">🚀 Install in 5 minutes</a>
-      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" class="btn btn-secondary" target="_blank" rel="noopener">⭐ View on GitHub</a>
+      <a href="https://github.com/roswelly/polymarket-trading-bot" class="btn btn-secondary" target="_blank" rel="noopener">⭐ View on GitHub</a>
     </div>
     <div class="hero-stats">
       <div>
         <div class="stat-val">&lt;3<span class="unit">s</span></div>
-        <div class="stat-label">Copy latency</div>
+        <div class="stat-label">latency</div>
       </div>
       <div>
         <div class="stat-val">24/7</div>
@@ -463,7 +461,6 @@
 <section id="how">
   <div class="container">
     <div class="kicker">How It Works</div>
-    <h2>Watch wallets. Copy trades. Collect.</h2>
     <p class="lead">Every second, the bot polls the wallets you're tracking. The instant they trade, you trade - proportionally sized to your deposit.</p>
 
     <div class="features">
@@ -542,7 +539,7 @@
     <div class="terminal">
       <div class="terminal-bar">
         <span class="terminal-dot r"></span><span class="terminal-dot y"></span><span class="terminal-dot g"></span>
-        <span class="terminal-title">polymarket-copy-bot - live</span>
+        <span class="terminal-title">polymarket-trading-bot - live</span>
       </div>
       <div class="terminal-body">
 <span class="t">[02:13:44]</span> <span>🔎 Watching wallet...</span>            <span class="dim">no new trades</span><br>
@@ -648,8 +645,8 @@
           <h3>Download the bot</h3>
           <div class="step-meta">2 minutes · copy-paste these commands</div>
           <p>Open your terminal and paste each line one at a time:</p>
-          <pre>git clone https://github.com/roswelly/polymarket-copy-trading-bot.git
-cd polymarket-copy-trading-bot
+          <pre>git clone https://github.com/roswelly/polymarket-trading-bot.git
+cd polymarket-trading-bot
 npm install
 cp env.example .env</pre>
         </div>
@@ -660,19 +657,7 @@ cp env.example .env</pre>
         <div>
           <h3>Fill in 4 lines of config</h3>
           <div class="step-meta">3 minutes · edit the .env file in Notepad or any text editor</div>
-          <pre># 1. The wallet you want to copy
-USER_ADDRESS=0xTheTraderYouWantToCopy
-
-# 2. Your wallet address (from MetaMask)
-PROXY_WALLET=0xYourWalletAddress
-
-# 3. Your private key (from MetaMask - KEEP SECRET)
-PRIVATE_KEY=your_private_key_here
-
-# 4. Your MongoDB connection string (from step 1)
-MONGO_URI=mongodb+srv://yourstring...
-
-# Leave everything else unchanged ✅</pre>
+        
         </div>
       </div>
 
@@ -683,9 +668,6 @@ MONGO_URI=mongodb+srv://yourstring...
           <div class="step-meta">Back in the terminal · one command</div>
           <pre>npm run build && npm start</pre>
           <p style="margin-top: 16px;">You'll see:</p>
-          <pre style="color: var(--success);">✅ Connected to database
-✅ Watching wallet: 0xTheTraderYouWantToCopy
-💤 Waiting for trades...</pre>
           <p style="margin-top: 16px; color: var(--text);">🎉 <strong>The bot is live.</strong> Leave the terminal open. The next trade your target makes will mirror automatically.</p>
         </div>
       </div>
@@ -697,7 +679,6 @@ MONGO_URI=mongodb+srv://yourstring...
 <section>
   <div class="container">
     <div class="kicker">Picking Wallets</div>
-    <h2>Your profits come from who you copy.</h2>
     <p class="lead">The bot handles execution. The returns come from wallet selection. Spend 30 minutes here - it pays for itself.</p>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px;">
@@ -753,7 +734,6 @@ MONGO_URI=mongodb+srv://yourstring...
         <div class="faq-body">Yes - any $5/month VPS (DigitalOcean, Hetzner, Vultr) runs it fine. Recommended once you've deposited over $1,000 so it keeps running when your laptop sleeps.</div>
       </details>
       <details>
-        <summary>What if the wallet I'm copying starts losing?</summary>
         <div class="faq-body">Every wallet has losing streaks. That's why you diversify to 3–5 wallets and review logs weekly to rotate out underperformers.</div>
       </details>
       <details>
@@ -775,7 +755,7 @@ MONGO_URI=mongodb+srv://yourstring...
     <p>The market just moved. You're asleep. <strong style="color: var(--text);">Your bot isn't.</strong></p>
     <div class="cta-row">
       <a href="#install" class="btn btn-primary">Start the 5-minute install</a>
-      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" class="btn btn-secondary" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+      <a href="https://github.com/roswelly/polymarket-trading-bot" class="btn btn-secondary" target="_blank" rel="noopener">⭐ Star on GitHub</a>
     </div>
   </div>
 </section>
@@ -783,11 +763,11 @@ MONGO_URI=mongodb+srv://yourstring...
 <footer>
   <div class="container">
     <div>
-      <a href="https://github.com/roswelly/polymarket-copy-trading-bot" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="https://github.com/roswelly/polymarket-trading-bot" target="_blank" rel="noopener">GitHub</a> ·
       <a href="https://polymarket.com/leaderboard" target="_blank" rel="noopener">Leaderboard</a> ·
       <a href="https://polymarket.com" target="_blank" rel="noopener">Polymarket</a> ·
       <a href="https://polygon.technology" target="_blank" rel="noopener">Polygon</a> ·
-      <a href="https://github.com/roswelly/polymarket-copy-trading-bot/issues" target="_blank" rel="noopener">Issues</a>
+      <a href="https://github.com/roswelly/polymarket-trading-bot/issues" target="_blank" rel="noopener">Issues</a>
     </div>
     <div class="disclaimer">
       Educational software. Not financial advice. Your capital, your responsibility.<br />

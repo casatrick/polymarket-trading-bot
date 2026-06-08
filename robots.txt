@@ -1,5 +1,5 @@
 # robots.txt for Polymarket Copy Trading Bot
-# https://github.com/roswelly/polymarket-copy-trading-bot
+# https://github.com/roswelly/polymarket-trading-bot
 #
 # This file controls how search engines crawl and index the repository.
 # Allow all major search engines to index public documentation and source code,
@@ -136,4 +136,4 @@ Disallow: /
 # ─────────────────────────────────────────────
 # Sitemap reference
 # ─────────────────────────────────────────────
-Sitemap: https://github.com/roswelly/polymarket-copy-trading-bot/blob/main/sitemap.xml
+Sitemap: https://github.com/roswelly/polymarket-trading-bot/blob/main/sitemap.xml
