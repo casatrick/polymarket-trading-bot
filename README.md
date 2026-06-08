@@ -39,10 +39,10 @@
 
 ## What This Bot Does
 
-This is an open-source **Polymarket trading bot** that implements a **late-entry probability capture** strategy on BTC prediction markets. Instead of predicting price direction, the bot identifies near-certain outcomes in the final 30–60 seconds before market resolution and captures the remaining uncertainty premium.
+This is an open-source **Polymarket trading bot** that implements a **late-entry probability capture** strategy on BTC prediction markets. Instead of predicting price direction, the bot identifies near-certain outcomes in the final 30-60 seconds before market resolution and captures the remaining uncertainty premium.
 
 **Target markets:** BTC 5, 15-minute price markets on Polymarket  
-**Entry window:** 30–60 seconds before market close  
+**Entry window:** 30-60 seconds before market close  
 **Entry condition:** YES probability > 85%  
 **Edge:** Mispricing in the final seconds due to thin order books  
 
@@ -67,7 +67,7 @@ Time to resolution: <60 seconds
 | Condition | Threshold | Reason |
 |-----------|-----------|--------|
 | YES probability | > 0.85 | Below this the risk/reward breaks down |
-| Time remaining | 5–60 seconds | Outside this window edge disappears |
+| Time remaining | 5-60 seconds | Outside this window edge disappears |
 | Order book spread | < 2% of implied probability | Wide spread destroys fill quality |
 | Asset | BTC only | Highest Polymarket liquidity, most orderly final candle |
 | Timeframe | 5, 15-minute markets only | More orderly than 5-minute, better final candle stability |
@@ -177,7 +177,7 @@ STRATEGY_ENTRY_WINDOW_SECONDS=60
 
 ### Paper Trading (Default - Recommended to Start)
 
-Paper trading uses **real Polymarket market data** but executes no on-chain transactions. Simulates realistic slippage (0.3–3%) to give honest performance estimates.
+Paper trading uses **real Polymarket market data** but executes no on-chain transactions. Simulates realistic slippage (0.3-3%) to give honest performance estimates.
 
 ```bash
 # Paper mode is the default - just run the bot
@@ -185,7 +185,7 @@ npm run dev
 # Select "PAPER" in the dashboard mode toggle
 ```
 
-Paper trading is the **safe way to validate** the strategy before committing real capital. Run at least 50–100 paper trades before going live.
+Paper trading is the **safe way to validate** the strategy before committing real capital. Run at least 50-100 paper trades before going live.
 
 ### Live Trading
 
@@ -207,9 +207,9 @@ Backtest replays historical Polymarket market data against the strategy logic.
 | Model | Simulated Slippage | Use For |
 |-------|-------------------|---------|
 | None | 0% | Theoretical maximum |
-| Low | 0.3–1% | Best-case realistic |
-| Realistic | 0.8–3% | **Default - use this** |
-| Severe | 2–6% | Stress testing |
+| Low | 0.3-1% | Best-case realistic |
+| Realistic | 0.8-3% | **Default - use this** |
+| Severe | 2-6% | Stress testing |
 
 > ⚠️ Always use **Realistic** slippage for backtesting. The `None` model produces unrealistically optimistic results and should only be used to understand theoretical edge.
 
