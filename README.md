@@ -11,7 +11,7 @@
 ---
 
 ## Live Link
-[polymarket trading bot](https://polymarket.com/@rowelly)
+[https://polymarket.com/@rowelly](https://polymarket.com/@rowelly)
 
 ---
 
