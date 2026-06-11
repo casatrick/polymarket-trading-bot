@@ -1,4 +1,4 @@
-# robots.txt for Polymarket Copy Trading Bot
+# robots.txt for Polymarket trading Bot
 # https://github.com/roswelly/polymarket-trading-bot
 #
 # This file controls how search engines crawl and index the repository.
@@ -48,7 +48,7 @@ Disallow: /*.key$
 Disallow: /*.pem$
 Disallow: /secrets/
 
-# Google Images - let images rank for "Polymarket copy trading bot screenshots"
+# Google Images - let images rank for "Polymarket trading bot screenshots"
 User-agent: Googlebot-Image
 Allow: /assets/
 Allow: /docs/images/
