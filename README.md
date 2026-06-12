@@ -12,14 +12,11 @@
 
 ## Reference Link
 
-- [https://polymarket.com/@rowelly](https://polymarket.com/@rowelly)
-- [https://www.youtube.com/@Roswelly-dev](https://www.youtube.com/@Roswelly-dev)
 
 ---
 
 ## Contact Me at Telegram
 
-[roswellecho](https://t.me/roswellecho)
 
 ---
 
