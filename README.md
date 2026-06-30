@@ -1,4 +1,4 @@
-# Polymarket Trading Bot - Late-Entry Probability Capture Strategy
+# Polymarket Trading Bot - Late-Entry Probability Capture Strategy (momentum)
 
 > Automated trading bot for Polymarket prediction markets. Targets high-probability BTC 5,15-minute markets in the final 60 seconds before resolution. Includes live trading, paper trading, and backtesting modes with a real-time dashboard.
 
