@@ -210,7 +210,7 @@ Backtest replays historical Polymarket market data against the strategy logic.
 | Realistic | 0.8-3% | **Default - use this** |
 | Severe | 2-6% | Stress testing |
 
-> ⚠️ Always use **Realistic** slippage for backtesting. The `None` model produces unrealistically optimistic results and should only be used to understand theoretical edge.
+>  Always use **Realistic** slippage for backtesting. The `None` model produces unrealistically optimistic results and should only be used to understand theoretical edge.
 
 ---
 
